@@ -5,7 +5,7 @@
 #include <iostream>
 
 class Entity {
-protected:               // 🔑 change from private to protected
+protected:               
     std::string id;
     std::string name;
     bool isActive;
