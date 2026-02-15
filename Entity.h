@@ -2,18 +2,19 @@
 #define ENTITY_H
 
 #include <string>
-#include <memory>
+#include <iostream>
 
 class Entity {
-protected:
+protected:               // 🔑 change from private to protected
     std::string id;
     std::string name;
     bool isActive;
-    
+
 public:
     Entity(const std::string& entityName);
     virtual ~Entity() = default;
 
+    // abstract methods for derived classes to implement
     virtual void update(float deltaTime) = 0;
     virtual void render() = 0;
 
@@ -23,4 +24,4 @@ public:
     void setIsActive(bool active);
 };
 
-#endif 
+#endif // ENTITY_H
