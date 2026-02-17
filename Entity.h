@@ -2,26 +2,29 @@
 #define ENTITY_H
 
 #include <string>
-#include <iostream>
+using namespace std;
 
 class Entity {
-protected:               
-    std::string id;
-    std::string name;
+private:
+    string id;
+    string name;
     bool isActive;
 
+    static string generateUniqueId();
+
 public:
-    Entity(const std::string& entityName);
-    virtual ~Entity() = default;
+    Entity(const string& entityName);
+    virtual ~Entity() {}   
 
-    // abstract methods for derived classes to implement
-    virtual void update(float deltaTime) = 0;
-    virtual void render() = 0;
-
-    std::string getId() const;
-    std::string getName() const;
+    string getId() const;
+    string getName() const;
     bool getIsActive() const;
+
     void setIsActive(bool active);
+
+    // Add these for polymorphism
+    virtual void update() = 0;
+    virtual void draw() = 0;
 };
 
-#endif // ENTITY_H
+#endif
