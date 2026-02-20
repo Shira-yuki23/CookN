@@ -3,28 +3,32 @@
 
 #include <string>
 
-class IRenderer;   // forward declaration
+using namespace std;
 
 class Entity {
 private:
-    std::string id;
-    std::string name;
+    string id;
+    string name;
     bool isActive;
 
-    static std::string generateUniqueId();
+    static string generateUniqueId();
 
 public:
-    Entity(const std::string& entityName);
-    virtual ~Entity() {}
+    Entity(const string& entityName);
+    virtual ~Entity() {}   
 
-    std::string getId() const;
-    std::string getName() const;
+    string getId() const;
+    string getName() const;
+
     bool getIsActive() const;
 
     void setIsActive(bool active);
 
+
+    // Add these for polymorphism
     virtual void update() = 0;
-    virtual void draw(IRenderer& renderer) = 0;
+    virtual void draw() = 0;
+
 };
 
 #endif

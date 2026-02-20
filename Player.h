@@ -1,24 +1,19 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "Entity.h"
-#include <string>
 
-class IRenderer;   // IMPORTANT
+#include "SpatialEntity.h"
 
-class Player : public Entity {
-private:
-    int x;
-    int y;
-    int health;
-
+class Player : public SpatialEntity {
 public:
-    Player(const std::string& name, int xPos, int yPos);
+    Player(int startX, int startY);
 
-    void update() override;
-    void draw(IRenderer& renderer) override;
+    void update(float deltaTime) override;
+    void render() override;
 
-    void takeDamage(int amount);
+    void move(int dx, int dy);
 };
 
 #endif
+
+
