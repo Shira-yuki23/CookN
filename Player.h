@@ -5,13 +5,13 @@
 
 class Player : public SpatialEntity {
 public:
-    Player(int startX, int startY);
+    Player(float startX = 0, float startY = 0);
 
     void update(float deltaTime) override;
-    void render() override;
+    void draw() override;
 
-    void move(int dx, int dy);
+    void move(float dx, float dy);
+    void onEvent(Event& event) override;
 };
 
 #endif
-

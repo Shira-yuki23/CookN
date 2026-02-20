@@ -1,17 +1,25 @@
 #include "SpatialEntity.h"
-#include<iostream>
+#include <iostream>
 
-SpatialEntity::SpatialEntity(const std::string& name, int startX,int startY) : Entity(name), x(startX), y(startY) {}
-int SpatialEntity::getX() const { return x; }
-int SpatialEntity::getY() const { return y; }
+using namespace std;
 
-void SpatialEntity::setPosition(int newX, int newY) {
-    x = newX;
-    y = newY;
+SpatialEntity::SpatialEntity(const string& name, float startX, float startY)
+    : Entity(name)
+{
+    setPosition(startX, startY);
 }
-void SpatialEntity::update(float) {
-    // hv to chng for movable obj 
+
+float SpatialEntity::getX() const { return x; }
+float SpatialEntity::getY() const { return y; }
+void SpatialEntity::setPosition(float newX, float newY) { Entity::setPosition(newX, newY); }
+
+void SpatialEntity::update(float deltaTime) {
+    // Default spatial entity movement using velocity
+    x += vx * deltaTime;
+    y += vy * deltaTime;
 }
-void SpatialEntity::render() {
-    std::cout << name << " at (" << x << "," << y << ")\n";
+
+void SpatialEntity::draw() {
+    cout << "Drawing SpatialEntity: " << name 
+         << " at (" << x << ", " << y << ")" << endl;
 }
