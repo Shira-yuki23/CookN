@@ -2,6 +2,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include "SceneManager.h"
 
 //add headers here
 #include "Scene.h"
@@ -24,6 +25,20 @@ void Engine::initialize() {
     currentScene = std::make_shared<Scene>("DefaultScene");
     is_running = true;
     std::cout << "Engine initialization complete" << std::endl;
+
+
+sceneManager = std::make_unique<SceneManager>();
+
+
+auto mainMenuScene = std::make_shared<Scene>("MainMenu");
+auto gamePlayScene = std::make_shared<Scene>("GamePlay");
+
+
+sceneManager->addScene(mainMenuScene);
+sceneManager->addScene(gamePlayScene);
+
+
+sceneManager->switchScene("MainMenu");
 }
 
 void Engine::run() {
@@ -36,10 +51,12 @@ void Engine::run() {
     while (is_running) {
         calculateDeltaTime();
         inputHandler->processInput();
-        if (currentScene) {
-            currentScene->update(delta_time);
-        }
-        renderer->render(currentScene.get());
+        if (sceneManager && sceneManager->getCurrentScene()) {
+    sceneManager->getCurrentScene()->update(delta_time);
+}
+if (renderer && sceneManager && sceneManager->getCurrentScene()) {
+    renderer->render(sceneManager->getCurrentScene().get());
+}
         std::this_thread::sleep_for(std::chrono::milliseconds(16)); // ~60 FPS
     }
 }

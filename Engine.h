@@ -3,14 +3,15 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include "SceneManager.h"  
 
-//declare the classes here,forward declaration
 class Scene;
 class InputHandler;
 class Renderer;
 
 class Engine {
-private:
+    private:
+    std::unique_ptr<SceneManager> sceneManager;
     std::shared_ptr<Scene> currentScene;
     std::unique_ptr<InputHandler> inputHandler;
     std::unique_ptr<Renderer> renderer;
