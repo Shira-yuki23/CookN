@@ -1,4 +1,4 @@
-#include "Event.h"
+#include "event.h"
 
 // Base Event class constructor
 Event::Event(EventType t, const string& sender, int val)
