@@ -1,5 +1,9 @@
 #include "Player.h"
+<<<<<<< HEAD
 #include "event.h"
+=======
+#include "Event.h"
+>>>>>>> origin/arshiyahera-patch-1
 #include <iostream>
 
 Player::Player(int startX, int startY)

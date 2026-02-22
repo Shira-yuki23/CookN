@@ -4,20 +4,15 @@
 #include "Entity.h"
 
 class SpatialEntity : public Entity {
-protected:
-    int x;
-    int y;
-
 public:
-    SpatialEntity(const std::string& name, int startX, int startY);
+    SpatialEntity(const string& name, float startX = 0, float startY = 0);
 
-    int getX() const;
-    int getY() const;
-    void setPosition(int newX, int newY);
-    //from entity
+    float getX() const;
+    float getY() const;
+    void setPosition(float newX, float newY);
+
     void update(float deltaTime) override;
-    void render() override;
+    void draw() override;
 };
 
 #endif
-
