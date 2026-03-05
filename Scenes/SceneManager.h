@@ -1,22 +1,17 @@
-    #ifndef SCENEMANAGER_H
-#define SCENEMANAGER_H
+ #pragma once
 
-#include <iostream>
-#include <string>
-#include <map>
 #include <memory>
-#include "Scene.h"
+#include <map>
+#include <string>
+#include <iostream>
 
-// Forward declaration so Engine can be friend
-class Engine;
+#include "Scene.h"
+#include "SceneFactory.h"
 
 class SceneManager {
 private:
-    std::shared_ptr<Scene> currentScene;
     std::map<std::string, std::shared_ptr<Scene>> scenes;
-
-    // Engine can access private members
-    friend class Engine;
+    std::shared_ptr<Scene> currentScene;
 
 public:
     SceneManager();
@@ -24,11 +19,13 @@ public:
 
     void addScene(const std::shared_ptr<Scene>& scene);
     void removeScene(const std::string& sceneName);
+
     void switchScene(const std::string& sceneName);
+
+    // NEW FUNCTION
+    void createAndAddScene(const std::string& sceneName);
+
     std::shared_ptr<Scene> getCurrentScene() const;
 
-    // Utility function for debugging
     void printAllScenes() const;
 };
-
-#endif // SCENEMANAGER_H
