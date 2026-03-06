@@ -1,17 +1,18 @@
  #pragma once
-
 #include <memory>
-#include <map>
+#include <unordered_map>
+#include <stack>
 #include <string>
 #include <iostream>
-
 #include "Scene.h"
-#include "SceneFactory.h"
 
-class SceneManager {
+class SceneManager
+{
 private:
-    std::map<std::string, std::shared_ptr<Scene>> scenes;
+    std::unordered_map<std::string, std::shared_ptr<Scene>> scenes;
     std::shared_ptr<Scene> currentScene;
+
+    std::stack<std::string> sceneHistory;   // NEW FEATURE
 
 public:
     SceneManager();
@@ -23,7 +24,7 @@ public:
     void switchScene(const std::string& sceneName);
 
     // NEW FUNCTION
-    void createAndAddScene(const std::string& sceneName);
+    void goBack();
 
     std::shared_ptr<Scene> getCurrentScene() const;
 

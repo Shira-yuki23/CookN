@@ -74,3 +74,43 @@ void SceneManager::printAllScenes() const {
         std::cout << " - " << pair.first << std::endl;
     }
 }
+
+void SceneManager::switchScene(const std::string& sceneName)
+{
+    if (scenes.find(sceneName) != scenes.end())
+    {
+        if (currentScene)
+        {
+            sceneHistory.push(currentScene->getName()); // save history
+        }
+
+        currentScene = scenes[sceneName];
+
+        std::cout << "[SceneManager] Switched to scene: " << sceneName << std::endl;
+
+        currentScene->update(0.0f);
+    }
+    else
+    {
+        std::cerr << "[SceneManager] Scene not found: " << sceneName << std::endl;
+    }
+}
+
+void SceneManager::goBack()
+{
+    if (!sceneHistory.empty())
+    {
+        std::string previousScene = sceneHistory.top();
+        sceneHistory.pop();
+
+        currentScene = scenes[previousScene];
+
+        std::cout << "[SceneManager] Returned to scene: " << previousScene << std::endl;
+
+        currentScene->update(0.0f);
+    }
+    else
+    {
+        std::cout << "[SceneManager] No previous scene in history." << std::endl;
+    }
+}
