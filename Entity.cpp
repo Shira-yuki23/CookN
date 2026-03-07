@@ -4,7 +4,7 @@
 
 Entity::Entity(const std::string& entityName)
     : name(entityName), isActive(true),
-      x(0), y(0), vx(0), vy(0), tag("")   // ✅ Added only necessary initializations
+      x(0), y(0), vx(0), vy(0), tag("")   // only necessary initializations
 {
     id = generateUniqueId();              // kept old ID system
 
