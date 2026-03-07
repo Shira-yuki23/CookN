@@ -5,7 +5,6 @@
 
 class Player : public SpatialEntity {
 public:
-<<<<<<< HEAD
     Player(float startX, float startY);
     
     void update() override; 
