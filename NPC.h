@@ -2,14 +2,14 @@
 #define NPC_H
 
 #include "SpatialEntity.h"
-
+`
 class NPC : public SpatialEntity {
 public:
-    NPC(float startX, float startY);
+    NPC(float start_x, float start_y);
     
-    void update(float deltaTime) override;
-    void onEvent(Event& event) override;
-    char getSymbol() const override { return 'N'; }
+    void update(float delta_time) override;
+    void on_event(Event& event) override;
+    char get_symbol() const override { return 'N'; }
 };
 
 #endif

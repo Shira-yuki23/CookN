@@ -11,9 +11,9 @@ public:
 
     void draw() override;   
 
-    void onEvent(Event& event);
+    void on_event(Event& event);
     
-    char getSymbol() const override { return 'P'; }
+    char get_symbol() const override { return 'P'; }
 };
 
 #endif

@@ -7,43 +7,43 @@ class Entity {
 private:
     std::string id;
     std::string name;
-    bool isActive;
+    bool is_active;
 
 protected:
     float x, y;       // Position
     float vx, vy;     // Velocity
     std::string tag;  // Optional tag
 
-    static std::string generateUniqueId();
+    static std::string generate_unique_id();
 
 public:
-    Entity(const std::string& entityName);
+    Entity(const std::string& entity_name);
     virtual ~Entity() {}
 
     // Accessors
-    std::string getId() const;
-    std::string getName() const;
-    bool getIsActive() const;
-    void setIsActive(bool active);
+    std::string get_id() const;
+    std::string get_name() const;
+    bool get_is_active() const;
+    void set_is_active(bool active);
 
     // Position & velocity
-    void setPosition(float newX, float newY);
-    float getX() const;
-    float getY() const;
+    void set_position(float newX, float newY);
+    float get_x() const;
+    float get_y() const;
 
-    void setVelocity(float newVx, float newVy);
+    void set_velocity(float newVx, float newVy);
     void move(float dx, float dy);
 
-    void setTag(const std::string& t);
-    std::string getTag() const;
+    void set_tag(const std::string& t);
+    std::string get_tag() const;
 
     // Polymorphism
     virtual void update() = 0;
     virtual void draw() = 0;
 
     //get
-    float getVX() const { return vx; }
-    float getVY() const { return vy; }
+    float get_vx() const { return vx; }
+    float get_vy() const { return vy; }
 };
 
 #endif

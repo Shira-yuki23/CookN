@@ -9,16 +9,16 @@ class PhysicsManager {
 private:
     std::vector<std::shared_ptr<SpatialEntity>> entities;
     float gravity = 9.8f;
-    bool enableCollisionsFlag = true;
+    bool _cFlag = true;
 
 public:
-    void registerEntity(std::shared_ptr<SpatialEntity> entity);
-    void unregisterEntity(std::shared_ptr<SpatialEntity> entity);
+    void register_entity(std::shared_ptr<SpatialEntity> entity);
+    void unregister_entity(std::shared_ptr<SpatialEntity> entity);
     void update(float deltaTime); 
     void move(SpatialEntity& entity, float dx, float dy);  
-    bool checkCollision(const SpatialEntity& a, const SpatialEntity& b);
-    void setGravity(float g);
-    void enableCollisions(bool enable);
+    bool check_collision(const SpatialEntity& a, const SpatialEntity& b);
+    void set_gravity(float g);
+    void enable_collisions(bool enable);
 };
 
 #endif
