@@ -1,22 +1,18 @@
-    #ifndef SCENEMANAGER_H
-#define SCENEMANAGER_H
-
-#include <iostream>
-#include <string>
-#include <map>
+ #pragma once
 #include <memory>
+#include <unordered_map>
+#include <stack>
+#include <string>
+#include <iostream>
 #include "Scene.h"
 
-// Forward declaration so Engine can be friend
-class Engine;
-
-class SceneManager {
+class SceneManager
+{
 private:
+    std::unordered_map<std::string, std::shared_ptr<Scene>> scenes;
     std::shared_ptr<Scene> currentScene;
-    std::map<std::string, std::shared_ptr<Scene>> scenes;
 
-    // Engine can access private members
-    friend class Engine;
+    std::stack<std::string> sceneHistory;   // NEW FEATURE
 
 public:
     SceneManager();
@@ -24,11 +20,13 @@ public:
 
     void addScene(const std::shared_ptr<Scene>& scene);
     void removeScene(const std::string& sceneName);
+
     void switchScene(const std::string& sceneName);
+
+    // NEW FUNCTION
+    void goBack();
+
     std::shared_ptr<Scene> getCurrentScene() const;
 
-    // Utility function for debugging
     void printAllScenes() const;
 };
-
-#endif // SCENEMANAGER_H
