@@ -1,9 +1,6 @@
 #include "Player.h"
-<<<<<<< HEAD
 #include "event.h"
-=======
 #include "Event.h"
->>>>>>> origin/arshiyahera-patch-1
 #include <iostream>
 using namespace std;
 
