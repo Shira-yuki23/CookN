@@ -1,0 +1,7 @@
+"*.exe" 
+"*.o" 
+"*.obj" 
+"Debug/" 
+"Release/" 
+"build/" 
+"bin/" 
