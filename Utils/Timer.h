@@ -1,4 +1,5 @@
  #pragma once
+#include <algorithm> // for std::max
 
 class Timer
 {
@@ -24,6 +25,13 @@ public:
     }
 
     float getTime() const { return time; } // const correctness
+
+    float restart() // reset and return previous time
+    {
+        float t = time;
+        reset();
+        return t;
+    }
 };
 
 // Countdown timer (inherits Timer)
@@ -32,7 +40,7 @@ class CountdownTimer : public Timer
 private:
     float countdown;
 public:
-    CountdownTimer(float duration) : countdown(duration) {}
+    CountdownTimer(float duration) : Timer(), countdown(duration) {}
 
     void update(const float deltaTime) override
     {
@@ -40,7 +48,7 @@ public:
             time += deltaTime;
     }
 
-    bool hasElapsed(const float duration) const override
+    bool hasElapsed(const float duration = 0.0f) const override
     {
         return time >= countdown;
     }
@@ -48,5 +56,10 @@ public:
     void reset() override
     {
         time = 0.0f;
+    }
+
+    float getRemaining() const
+    {
+        return std::max(0.0f, countdown - time);
     }
 };

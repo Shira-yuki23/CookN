@@ -1,4 +1,5 @@
  #include "SceneManager.h"
+ #include "../Utils/DebugAssert.h"
 
 SceneManager::SceneManager() {
     std::cout << "[SceneManager] Created" << std::endl;

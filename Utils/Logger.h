@@ -4,18 +4,33 @@
 #include <fstream>
 #include <iostream>
 
+// Log levels
+enum class LogLevel
+{
+    INFO,
+    WARNING,
+    ERROR
+};
+
 // Base class for all loggers
 class Logger
 {
 public:
     virtual ~Logger() = default;
 
-    // Polymorphic function
-    virtual void log(const std::string& message) const = 0;
+    // Polymorphic logging
+    virtual void log(const std::string& message, LogLevel level = LogLevel::INFO) const = 0;
 
-    virtual void error(const std::string& message) const
+protected:
+    std::string levelToString(LogLevel level) const
     {
-        std::cerr << "[ERROR] " << message << std::endl;
+        switch(level)
+        {
+            case LogLevel::INFO: return "[INFO]";
+            case LogLevel::WARNING: return "[WARNING]";
+            case LogLevel::ERROR: return "[ERROR]";
+        }
+        return "[LOG]";
     }
 };
 
@@ -23,9 +38,9 @@ public:
 class ConsoleLogger : public Logger
 {
 public:
-    void log(const std::string& message) const override
+    void log(const std::string& message, LogLevel level = LogLevel::INFO) const override
     {
-        std::cout << "[LOG] " << message << std::endl;
+        std::cout << levelToString(level) << " " << message << std::endl;
     }
 };
 
@@ -34,15 +49,17 @@ class FileLogger : public Logger
 {
 private:
     std::string filename;
+
 public:
     FileLogger(const std::string& file) : filename(file) {}
 
-    void log(const std::string& message) const override
+    void log(const std::string& message, LogLevel level = LogLevel::INFO) const override
     {
         std::ofstream out(filename, std::ios::app);
-        if (out.is_open())
+
+        if(out.is_open())
         {
-            out << "[LOG] " << message << std::endl;
+            out << levelToString(level) << " " << message << std::endl;
         }
     }
 };
