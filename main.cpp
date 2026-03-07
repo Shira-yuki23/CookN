@@ -8,11 +8,41 @@
 #include "NPC.h"
 #include "PhysicsManager.h"
 #include "InputHandler.h"
+// === My SceneManager & Utils integration start ===
+#include "Scenes/SceneManager.h"
+#include "Scenes/SceneFactory.h"
+#include "Scenes/GameScene.h"
+#include "Scenes/MenuScene.h"
+#include "Scenes/PauseScene.h"
+
+#include "Utils/ConfigManager.h"
+#include "Utils/Logger.h"
+#include "Utils/Timer.h"
+#include "Utils/InputManager.h"
+#include "Utils/EventDispatcher.h"
+// === My SceneManager & Utils integration end ===
 
 int main() {
     // Create input and physics managers
     InputHandler input;
     PhysicsManager physics;
+
+    // --- My Utils & SceneManager setup ---
+ConsoleLogger consoleLogger;
+FileLogger fileLogger("game_log.txt");
+auto config = ConfigManager::GetInstance();
+Timer deltaTimer;
+EventDispatcher eventDispatcher;
+
+// SceneManager setup
+SceneManager sceneManager;
+sceneManager.createAndAddScene("Menu");
+sceneManager.createAndAddScene("Game");
+sceneManager.createAndAddScene("Pause");
+
+// Switch to starting scene
+sceneManager.switchScene("Menu");
+// === End of my insertion ===
 
     // Create entities
     std::vector<std::unique_ptr<Entity>> entities;
@@ -26,6 +56,20 @@ int main() {
     bool running = true;
     while (running) {
         // Get input (for demo, just 1 = move right, 2 = quit)
+        float deltaTime = 0.016f; // fixed ~60 FPS
+deltaTimer.update(deltaTime);
+
+// Update current scene
+if (auto current = sceneManager.getCurrentScene()) {
+    current->update(deltaTime);
+}
+
+// Optional: Scene switching via InputManager
+if (InputManager::Pause()) {
+    sceneManager.switchScene("Pause");
+} else if (InputManager::Start()) {
+    sceneManager.switchScene("Game");
+}
         int cmd = input.getInput();
         if (cmd == 2) {
             running = false;
