@@ -12,7 +12,7 @@ protected:
     std::string name;
     bool isActive;
 
-    // ✅ Added new properties (minimal additions)
+    // new properties (minimal additions)
     float x = 0.0f, y = 0.0f;      // Position
     float vx = 0.0f, vy = 0.0f;    // Velocity
     std::string tag;               // Optional category/type
@@ -41,7 +41,7 @@ public:
     void setIsActive(bool active);
 
 
-    // ✅ New movement helpers
+    // movement helpers
     void setPosition(float newX, float newY);
     void setVelocity(float newVx, float newVy);
     float getX() const;
