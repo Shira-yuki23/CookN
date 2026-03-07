@@ -1,36 +1,49 @@
-#ifndef ENGINE_H
-#define ENGINE_H
-#include <memory>
+#ifndef Engine_H
+#define Engine_H
 #include <vector>
 #include <string>
-
-//declare the classes here,forward declaration
+#include <chrono>
 class Scene;
-class InputHandler;
+class InputHandler.h;
 class Renderer;
-
-class Engine {
+class PhysicsManager.h;
+class Entity;
+class Engine; 
+{
 private:
-    std::shared_ptr<Scene> currentScene;
-    std::unique_ptr<InputHandler> inputHandler;
-    std::unique_ptr<Renderer> renderer;
+    std::vector<std::shared_ptr<Scene>> Scenes;
+    std::shared_ptr<Scene> current_Scene;
+    std::unique_ptr<InputHandler> input_handler;
+    std::unique_ptr<Renderer> Renderer;
+    std::unique_ptr<PhysicsManager> physics_manager;
     bool is_running;
+    bool is_paused;
     float delta_time;
-
-    void calculateDeltaTime();
-    
+    int frame_count;
+    int target_fps;
+    std::chrono::high_resolution_clock::time_point last_frame_time;
+    void calculate_delta_time();
 public:
-    Engine();
-    ~Engine();
+    Engine;();
+    ~Engine;();
     void initialize();
     void run();
     void shutdown();
-    void loadScene(const std::string& sceneName);
-    void switchScene(const std::string& sceneName);
-    std::shared_ptr<Scene> getCurrentScene() const;
-    bool getIsRunning() const;
-    float getDeltaTime() const;
-    void setRunning(bool running);
+    void pause();
+    void resume();
+    void add_Scene(std::shared_ptr<Scene> Scene);
+    void load_Scene(const std::string& Scene_name);
+    bool switch_Scene(const std::string& Scene_name);
+    std::shared_ptr<Scene> get_current_Scene() const;
+    void add_Entity(std::shared_ptr<Entity> Entity);
+    void remove_Entity(const std::string& Entity_id);
+    bool get_is_running() const;
+    bool get_is_paused() const;
+    float get_delta_time() const;
+    int get_frame_count() const;
+    void set_running(bool running);
+    void set_paused(bool paused);
+    void set_target_fps(int fps);
 };
 
-#endif 
+#endif

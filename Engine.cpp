@@ -1,84 +1,265 @@
-#include "Engine.h"
+#include "engine.h"
 #include <iostream>
 #include <chrono>
 #include <thread>
-
-//add headers here
-#include "Scene.h"
-#include "InputHandler.h"
-#include "Renderer.h"
+#include <algorithm>
+#include "scene.h"
+#include "entity.h"
+#include "input_handler.h" 
+#include "renderer.h"
+#include "physics_manager.h"  
 
 using namespace std::chrono;
 
-Engine::Engine() : is_running(false), delta_time(0.0f) {
-    std::cout << "Engine initialized" << std::endl;
+Engine::Engine() 
+    : is_running(false)
+    , is_paused(false)
+    , delta_time(0.0f)
+    , frame_count(0)
+    , target_fps(60)  
+{
+    std::cout << "[ENGINE] Engine created" << std::endl;
 }
 
-Engine::~Engine() {
+Engine::~Engine() 
+{
     shutdown();
 }
 
-void Engine::initialize() {
-    inputHandler = std::make_unique<InputHandler>();
-    renderer = std::make_unique<Renderer>();
-    currentScene = std::make_shared<Scene>("DefaultScene");
+void Engine::initialize() 
+{
+    std::cout << "[ENGINE] Initializing..." << std::endl;
+    
+    input_handler = std::make_unique<InputHandler>();
+    renderer = std::make_unique<Renderer>();  
+    physics_manager = std::make_unique<PhysicsManager>();
+    
+    current_scene = std::make_shared<Scene>("DefaultScene");
+    scenes.push_back(current_scene);
+    
     is_running = true;
-    std::cout << "Engine initialization complete" << std::endl;
+    is_paused = false;
+    last_frame_time = high_resolution_clock::now();
+    
+    std::cout << "[ENGINE] Initialization complete" << std::endl;
+    std::cout << "[ENGINE] Target FPS: " << target_fps << std::endl;
 }
 
-void Engine::run() {
-    if (!is_running) {
-        std::cerr << "Engine not initialized. Call initialize() first." << std::endl;
+void Engine::run() 
+{
+    if (!is_running) 
+    {
+        std::cerr << "[ENGINE ERROR] Cannot run - engine not initialized" << std::endl;
         return;
     }
-    std::cout << "Starting game loop..." << std::endl;
-    auto lastTime = high_resolution_clock::now();
-    while (is_running) {
-        calculateDeltaTime();
-        inputHandler->processInput();
-        if (currentScene) {
-            currentScene->update(delta_time);
+    
+    std::cout << "[ENGINE] Game loop started" << std::endl;
+    std::cout << "----------------------------------------" << std::endl;
+    
+    const double target_frame_time = 1.0 / target_fps; 
+    
+    auto previous_time = high_resolution_clock::now();
+    double lag = 0.0;
+    
+    while(is_running)
+    {
+        auto current_time = high_resolution_clock::now();
+        
+        double elapsed = duration<double>(current_time - previous_time).count();
+        previous_time = current_time;
+        lag += elapsed;
+
+        bool paused = is_paused;
+
+        if (input_handler) 
+        {
+            input_handler->process_input();
         }
-        renderer->render(currentScene.get());
-        std::this_thread::sleep_for(std::chrono::milliseconds(16)); // ~60 FPS
+        
+        while (lag >= target_frame_time && !paused)
+        {
+            delta_time = static_cast<float>(target_frame_time);
+            
+            if (physics_manager) 
+            {
+                physics_manager->update(delta_time);
+            }
+            
+            if (current_scene) 
+            {
+                current_scene->update(delta_time);
+            }
+            
+            lag -= target_frame_time;
+        }
+
+        if (renderer && current_scene) 
+        {
+           
+            float alpha = static_cast<float>(lag / target_frame_time);
+            alpha = std::clamp(alpha, 0.0f, 1.0f);
+            renderer->render(current_scene.get(), alpha);
+        }
+        
+        frame_count++;
+
+        static auto last_fps_time = high_resolution_clock::now();
+        static int last_frame_count = 0;
+        
+        auto now = high_resolution_clock::now();
+        double time_since_last_fps = duration<double>(now - last_fps_time).count();
+        
+        if (time_since_last_fps >= 1.0) 
+        {
+            int fps = frame_count - last_frame_count;
+            std::cout << "[ENGINE] FPS: " << fps << std::endl;
+            last_fps_time = now;
+            last_frame_count = frame_count;
+        }
+
+        auto frame_end = high_resolution_clock::now();
+        double frame_duration = duration<double>(frame_end - current_time).count();
+        
+        if (frame_duration < target_frame_time)  
+        {
+            auto sleep_time = duration<double>(target_frame_time - frame_duration);
+            std::this_thread::sleep_for(sleep_time);
+        }
     }
 }
 
-void Engine::calculateDeltaTime() {
-    static auto lastTime = high_resolution_clock::now();
-    auto currentTime = high_resolution_clock::now();
-    
-    duration<float> elapsed = currentTime - lastTime;
-    delta_time = elapsed.count();
-    lastTime = currentTime;
-}
-
-void Engine::shutdown() {
+void Engine::shutdown() 
+{
+    std::cout << "[ENGINE] Shutting down..." << std::endl;
     is_running = false;
-    std::cout << "Engine shutting down..." << std::endl;
+
+    renderer.reset();
+    input_handler.reset();
+    physics_manager.reset();
+    scenes.clear();
+    current_scene.reset();
+    
+    std::cout << "[ENGINE] Shutdown complete" << std::endl;
 }
 
-
-void Engine::loadScene(const std::string& sceneName) {
-    std::cout << "Loading scene: " << sceneName << std::endl;
+void Engine::add_scene(std::shared_ptr<Scene> scene)
+{
+    if (scene)
+    {
+        scenes.push_back(scene);
+        std::cout << "[ENGINE] Scene added: " << scene->get_name() << std::endl;
+    }
 }
 
-void Engine::switchScene(const std::string& sceneName) {
-    std::cout << "Switching to scene: " << sceneName << std::endl;
+void Engine::load_scene(const std::string& scene_name) 
+{
+    std::cout << "[ENGINE] Loading scene: " << scene_name << std::endl;
+    
+    for (auto& scene : scenes)
+    {
+        if (scene->get_name() == scene_name)
+        {
+            current_scene = scene;
+            std::cout << "[ENGINE] Scene loaded: " << scene_name << std::endl;
+            return;
+        }
+    }
+    
+    std::cerr << "[ENGINE ERROR] Scene not found: " << scene_name << std::endl;
 }
 
-std::shared_ptr<Scene> Engine::getCurrentScene() const {
-    return currentScene;
+bool Engine::switch_scene(const std::string& scene_name) 
+{
+    for(auto& scene : scenes)
+    {
+        if(scene->get_name() == scene_name)
+        {
+            current_scene = scene;
+            std::cout << "[ENGINE] Switched to scene: " << scene_name << std::endl;
+            return true;
+        }
+    }
+    
+    std::cerr << "[ENGINE ERROR] Cannot switch - scene not found: " << scene_name << std::endl;
+    return false;
 }
 
-bool Engine::getIsRunning() const {
+void Engine::pause()
+{
+    if (!is_paused)
+    {
+        is_paused = true;
+        std::cout << "[ENGINE] Game paused" << std::endl;
+    }
+}
+
+void Engine::resume()
+{
+    if (is_paused)
+    {
+        is_paused = false;
+        std::cout << "[ENGINE] Game resumed" << std::endl;
+    }
+}
+
+void Engine::add_entity(std::shared_ptr<Entity> entity)
+{
+    if (current_scene && entity)
+    {
+        current_scene->add_entity(entity);
+        std::cout << "[ENGINE] Entity added to current scene" << std::endl;
+    }
+}
+
+void Engine::remove_entity(const std::string& entity_id)
+{
+    if (current_scene)
+    {
+        current_scene->remove_entity(entity_id);
+        std::cout << "[ENGINE] Entity removed: " << entity_id << std::endl;
+    }
+}
+
+std::shared_ptr<Scene> Engine::get_current_scene() const 
+{
+    return current_scene;
+}
+
+bool Engine::get_is_running() const 
+{
     return is_running;
 }
 
-float Engine::getDeltaTime() const {
+bool Engine::get_is_paused() const 
+{
+    return is_paused;
+}
+
+float Engine::get_delta_time() const 
+{
     return delta_time;
 }
 
-void Engine::setRunning(bool running) {
+int Engine::get_frame_count() const 
+{
+    return frame_count;
+}
+
+void Engine::set_running(bool running) 
+{
     is_running = running;
+}
+
+void Engine::set_paused(bool paused)
+{
+    is_paused = paused;
+}
+
+
+void Engine::set_target_fps(int fps)
+{
+    if (fps > 0) {
+        target_fps = fps;
+        std::cout << "[ENGINE] Target FPS set to: " << target_fps << std::endl;
+    }
 }
