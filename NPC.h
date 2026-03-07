@@ -5,11 +5,11 @@
 
 class NPC : public SpatialEntity {
 public:
-    NPC(int x, int y);
-
+    NPC(float startX, float startY);
+    
     void update(float deltaTime) override;
-    void render() override;
+    void onEvent(Event& event) override;
+    char getSymbol() const override { return 'N'; }
 };
 
 #endif
-

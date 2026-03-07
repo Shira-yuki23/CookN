@@ -1,19 +1,19 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-
 #include "SpatialEntity.h"
 
 class Player : public SpatialEntity {
 public:
-    Player(int startX, int startY);
+    Player(float startX, float startY);
+    
+    void update() override; 
 
-    void update(float deltaTime) override;
-    void render() override;
+    void draw() override;   
 
-    void move(int dx, int dy);
+    void onEvent(Event& event);
+    
+    char getSymbol() const override { return 'P'; }
 };
 
 #endif
-
-
