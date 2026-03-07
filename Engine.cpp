@@ -1,13 +1,13 @@
-#include "Engine.h"
+#include "engine.h"
 #include <iostream>
 #include <chrono>
 #include <thread>
 #include <algorithm>
-#include "Scene.h"
-#include "Entity.h"
-#include "input_handler.h"
-#include "Renderer.h"
-#include "physics_manager.h"
+#include "scene.h"
+#include "entity.h"
+#include "input_handler.h" 
+#include "renderer.h"
+#include "physics_manager.h"  
 
 using namespace std::chrono;
 
@@ -56,7 +56,7 @@ void Engine::run()
     std::cout << "[ENGINE] Game loop started" << std::endl;
     std::cout << "----------------------------------------" << std::endl;
     
-    const double frame_time = 1.0 / target_fps; 
+    const double target_frame_time = 1.0 / target_fps; 
     
     auto previous_time = high_resolution_clock::now();
     double lag = 0.0;
@@ -69,53 +69,63 @@ void Engine::run()
         previous_time = current_time;
         lag += elapsed;
 
-        if (input_handler && !is_paused)
+        bool paused = is_paused;
+
+        if (input_handler) 
         {
             input_handler->process_input();
         }
-
-        while (lag >= frame_time && !is_paused)
+        
+        while (lag >= target_frame_time && !paused)
         {
-            delta_time = frame_time;  
- 
-            if (physics_manager)
+            delta_time = static_cast<float>(target_frame_time);
+            
+            if (physics_manager) 
             {
                 physics_manager->update(delta_time);
             }
             
-            if (current_scene)
+            if (current_scene) 
             {
                 current_scene->update(delta_time);
             }
             
-            lag -= frame_time;
+            lag -= target_frame_time;
         }
 
-        if (renderer && current_scene)
+        if (renderer && current_scene) 
         {
-            float alpha = static_cast<float>(lag / frame_time);
+           
+            float alpha = static_cast<float>(lag / target_frame_time);
+            alpha = std::clamp(alpha, 0.0f, 1.0f);
             renderer->render(current_scene.get(), alpha);
         }
-
+        
         frame_count++;
 
-        if (frame_count % 60 == 0)
+        static auto last_fps_time = high_resolution_clock::now();
+        static int last_frame_count = 0;
+        
+        auto now = high_resolution_clock::now();
+        double time_since_last_fps = duration<double>(now - last_fps_time).count();
+        
+        if (time_since_last_fps >= 1.0) 
         {
-            auto now = high_resolution_clock::now();
-            double actual_frame_time = duration<double>(now - previous_time).count();
-            double fps = 1.0 / actual_frame_time;
-            std::cout << "[ENGINE] FPS: " << static_cast<int>(fps) << std::endl;
+            int fps = frame_count - last_frame_count;
+            std::cout << "[ENGINE] FPS: " << fps << std::endl;
+            last_fps_time = now;
+            last_frame_count = frame_count;
+        }
+
+        auto frame_end = high_resolution_clock::now();
+        double frame_duration = duration<double>(frame_end - current_time).count();
+        
+        if (frame_duration < target_frame_time)  
+        {
+            auto sleep_time = duration<double>(target_frame_time - frame_duration);
+            std::this_thread::sleep_for(sleep_time);
         }
     }
-}
-
-void Engine::calculate_delta_time() 
-{
-    static auto last_time = high_resolution_clock::now();
-    auto current_time = high_resolution_clock::now();
-    duration<float> elapsed = current_time - last_time;
-    delta_time = elapsed.count();
-    last_time = current_time;
 }
 
 void Engine::shutdown() 
@@ -243,4 +253,13 @@ void Engine::set_running(bool running)
 void Engine::set_paused(bool paused)
 {
     is_paused = paused;
+}
+
+
+void Engine::set_target_fps(int fps)
+{
+    if (fps > 0) {
+        target_fps = fps;
+        std::cout << "[ENGINE] Target FPS set to: " << target_fps << std::endl;
+    }
 }

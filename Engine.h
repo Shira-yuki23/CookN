@@ -1,20 +1,20 @@
-#ifndef ENGINE_H
-#define ENGINE_H
+#ifndef Engine_H
+#define Engine_H
 #include <vector>
 #include <string>
 #include <chrono>
 class Scene;
-class InputHandler;
+class InputHandler.h;
 class Renderer;
-class PhysicsManager;
+class PhysicsManager.h;
 class Entity;
-class Engine 
+class Engine; 
 {
 private:
-    std::vector<std::shared_ptr<Scene>> scenes;
-    std::shared_ptr<Scene> current_scene;
+    std::vector<std::shared_ptr<Scene>> Scenes;
+    std::shared_ptr<Scene> current_Scene;
     std::unique_ptr<InputHandler> input_handler;
-    std::unique_ptr<Renderer> renderer;
+    std::unique_ptr<Renderer> Renderer;
     std::unique_ptr<PhysicsManager> physics_manager;
     bool is_running;
     bool is_paused;
@@ -24,19 +24,19 @@ private:
     std::chrono::high_resolution_clock::time_point last_frame_time;
     void calculate_delta_time();
 public:
-    Engine();
-    ~Engine();
+    Engine;();
+    ~Engine;();
     void initialize();
     void run();
     void shutdown();
     void pause();
     void resume();
-    void add_scene(std::shared_ptr<Scene> scene);
-    void load_scene(const std::string& scene_name);
-    bool switch_scene(const std::string& scene_name);
-    std::shared_ptr<Scene> get_current_scene() const;
-    void add_entity(std::shared_ptr<Entity> entity);
-    void remove_entity(const std::string& entity_id);
+    void add_Scene(std::shared_ptr<Scene> Scene);
+    void load_Scene(const std::string& Scene_name);
+    bool switch_Scene(const std::string& Scene_name);
+    std::shared_ptr<Scene> get_current_Scene() const;
+    void add_Entity(std::shared_ptr<Entity> Entity);
+    void remove_Entity(const std::string& Entity_id);
     bool get_is_running() const;
     bool get_is_paused() const;
     float get_delta_time() const;
