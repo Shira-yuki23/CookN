@@ -1,3 +1,4 @@
+]
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -51,6 +52,7 @@ int main() {
 
         std::cout << "----------------------\n";
     }
+
 
     return 0;
 }

@@ -1,5 +1,9 @@
 #include "Player.h"
+<<<<<<< HEAD
 #include "Event.h"
+=======
+#include "event.h"
+>>>>>>> 4569e1523a852dfdc9dd00d7f7a793d0362ce5d6
 #include <iostream>
 
 Player::Player(int startX, int startY)

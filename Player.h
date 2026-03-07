@@ -1,6 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+
 #include "SpatialEntity.h"
 
 class Player : public SpatialEntity {
@@ -14,4 +15,10 @@ public:
     void onEvent(Event& event) override;
 };
 
+<<<<<<< HEAD
 #endif
+=======
+#endif
+
+
+>>>>>>> 4569e1523a852dfdc9dd00d7f7a793d0362ce5d6

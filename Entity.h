@@ -2,10 +2,10 @@
 #define ENTITY_H
 
 #include <string>
+
 #include <iostream>
 
 class Event; // Forward declaration
-
 class Entity {
 protected:
     std::string id;
@@ -25,6 +25,7 @@ public:
         std::cout << "Entity destroyed: " << name << std::endl;
     }
 
+
     // Core functions
     virtual void update(float deltaTime) = 0;
     virtual void render() = 0;  // kept render() (renamed from draw to match old)
@@ -35,8 +36,10 @@ public:
     // Getters / setters
     std::string getId() const;
     std::string getName() const;
+
     bool getIsActive() const;
     void setIsActive(bool active);
+
 
     // ✅ New movement helpers
     void setPosition(float newX, float newY);
@@ -47,6 +50,7 @@ public:
 
     void setTag(const std::string& t);
     std::string getTag() const;
+
 };
 
 #endif
