@@ -1,58 +1,92 @@
-]
 #include <iostream>
 #include <memory>
 #include <vector>
 #include "Entity.h"
-#include "SpatialEntity.h"
-#include "Player.h"
-#include "NPC.h"
-#include "PhysicsManager.h"
-#include "InputHandler.h"
+
+// Minimal Player class for demo
+class Player : public Entity {
+public:
+    Player(float x_, float y_) : Entity("Player") { setPosition(x_, y_); }
+
+    void update() override {
+        // Example: could update animations, physics, etc.
+    }
+
+    void draw() override {
+        std::cout << getName() << " at (" << getX() << ", " << getY() << ")\n";
+    }
+};
+
+// Minimal NPC class for demo
+class NPC : public Entity {
+public:
+    NPC(float x_, float y_) : Entity("NPC") { setPosition(x_, y_); }
+
+    void update() override {
+        // Example AI movement could go here
+    }
+
+    void draw() override {
+        std::cout << getName() << " at (" << getX() << ", " << getY() << ")\n";
+    }
+};
+
+// Simple InputHandler for demo
+class InputHandler {
+public:
+    int getInput() {
+        std::cout << "Enter 1 to move right, 2 to quit: ";
+        int cmd;
+        std::cin >> cmd;
+        return cmd;
+    }
+};
+
+// Simple PhysicsManager for demo
+class PhysicsManager {
+public:
+    void move(Entity& e, float dx, float dy) {
+        e.move(dx, dy);
+    }
+
+    bool checkCollision(const Entity& a, const Entity& b) {
+        // Simple collision: same integer position
+        return (static_cast<int>(a.getX()) == static_cast<int>(b.getX()) &&
+                static_cast<int>(a.getY()) == static_cast<int>(b.getY()));
+    }
+};
 
 int main() {
-    // Create input and physics managers
     InputHandler input;
     PhysicsManager physics;
 
-    // Create entities
     std::vector<std::unique_ptr<Entity>> entities;
-
-    auto player = std::make_unique<Player>(0, 0);   // x=0, y=0
-    auto npc = std::make_unique<NPC>(2, 2);         // x=2, y=2
-
-    entities.push_back(std::move(player));
-    entities.push_back(std::move(npc));
+    entities.push_back(std::make_unique<Player>(0, 0));
+    entities.push_back(std::make_unique<NPC>(2, 2));
 
     bool running = true;
     while (running) {
-        // Get input (for demo, just 1 = move right, 2 = quit)
         int cmd = input.getInput();
         if (cmd == 2) {
             running = false;
             continue;
         }
 
-        // Update positions via physics
         if (cmd == 1) {
-            physics.move(*dynamic_cast<SpatialEntity*>(entities[0].get()), 1, 0);
+            physics.move(*entities[0], 1, 0); // move player right
         }
 
-        // Check collision
-        if (physics.checkCollision(
-                *dynamic_cast<SpatialEntity*>(entities[0].get()),
-                *dynamic_cast<SpatialEntity*>(entities[1].get()))) {
+        if (physics.checkCollision(*entities[0], *entities[1])) {
             std::cout << "Collision!\n";
         }
 
-        // Update & render all entities
         for (auto& e : entities) {
-            e->update(0.016f);   // deltaTime ~16ms
-            e->render();
+            e->update();
+            e->draw();
         }
 
-        std::cout << "----------------------\n";
+        std::cout << "---------------------\n";
     }
-
 
     return 0;
 }

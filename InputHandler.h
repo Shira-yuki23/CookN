@@ -1,10 +1,21 @@
 #ifndef INPUT_HANDLER_H
 #define INPUT_HANDLER_H
 
+#include <unordered_map>
+
 class InputHandler {
+private:
+    std::unordered_map<int, bool> keyStates;
+    std::unordered_map<int, bool> previousKeyStates;
+
 public:
-    char getInput();//taking input button character
+    void process_input();
+
+    bool is_key_pressed(int key);
+
+    bool is_key_held(int key);
+
+    bool is_key_released(int key);
 };
 
 #endif
-
