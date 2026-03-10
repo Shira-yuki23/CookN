@@ -25,5 +25,5 @@ public:
     virtual char get_symbol() const { return '?'; }
     void update() override = 0;  
     void draw() override = 0;    
-
+};
 #endif
