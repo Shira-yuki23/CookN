@@ -9,7 +9,7 @@ class PhysicsManager {
 private:
     std::vector<std::shared_ptr<SpatialEntity>> entities;
     float gravity = 9.8f;
-    bool enableCollisionsFlag = true;
+    bool _cFlag = true;
 
 public:
     void register_entity(std::shared_ptr<SpatialEntity> entity);
