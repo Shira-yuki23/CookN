@@ -18,7 +18,7 @@ void Player::draw() {
          << static_cast<int>(getY()) << ")\n";  
 }
 
-void Player::onEvent(Event& event) {
+void Player::on_event(Event& event) {
     switch (event.type) {
         case EventType::MOVE_UP: 
             setPosition(getX(), getY() - 1);
