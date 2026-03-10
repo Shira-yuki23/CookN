@@ -14,10 +14,17 @@ private:
     std::string name;
     bool is_active;
 
+<<<<<<< HEAD
 protected:
     float x, y;       // Position
     float vx, vy;     // Velocity
     std::string tag;  // Optional tag
+=======
+    // new properties (minimal additions)
+    float x = 0.0f, y = 0.0f;      // Position
+    float vx = 0.0f, vy = 0.0f;    // Velocity
+    std::string tag;               // Optional category/type
+>>>>>>> origin/arshiyahera-patch-1
 
     static std::string generate_unique_id();
 
@@ -36,7 +43,26 @@ public:
     float get_x() const;
     float get_y() const;
 
+<<<<<<< HEAD
     void set_velocity(float new_vx, float new_vy);
+=======
+    // Optional event system
+    virtual void onEvent(Event& event) {}
+
+    // Getters / setters
+    std::string getId() const;
+    std::string getName() const;
+
+    bool getIsActive() const;
+    void setIsActive(bool active);
+
+
+    // movement helpers
+    void setPosition(float newX, float newY);
+    void setVelocity(float newVx, float newVy);
+    float getX() const;
+    float getY() const;
+>>>>>>> origin/arshiyahera-patch-1
     void move(float dx, float dy);
 
     void set_tag(const std::string& t);
