@@ -1,5 +1,11 @@
  #include "SceneManager.h"
  #include "../Utils/DebugAssert.h"
+#include "SceneFactory.h"
+class Scene;  
+#include <memory>
+#include <map>
+#include <stack>
+#include <string>
 
 SceneManager::SceneManager() {
     std::cout << "[SceneManager] Created" << std::endl;
