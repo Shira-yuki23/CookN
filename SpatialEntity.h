@@ -15,14 +15,14 @@ public:
         setPosition(startX, startY); 
     }
     
-    float getWidth() const { return width; }
-    float getHeight() const { return height; }
-    void setSize(float w, float h) { width = w; height = h; }
+    float get_width() const { return width; }
+    float get_height() const { return height; }
+    void set_size(float w, float h) { width = w; height = h; }
     
-    bool getIsStatic() const { return isStatic; }
-    void setIsStatic(bool s) { isStatic = s; }
+    bool get_is_static() const { return isStatic; }
+    void set_is_static(bool s) { isStatic = s; }
     
-    virtual char getSymbol() const { return '?'; }
+    virtual char get_symbol() const { return '?'; }
     void update() override = 0;  
     void draw() override = 0;    
 
