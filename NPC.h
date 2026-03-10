@@ -3,7 +3,7 @@
 
 #include "SpatialEntity.h"
 
-#include "event.h"
+#include "Event.h"
 #include <string>
 
 class NPC : public SpatialEntity {
