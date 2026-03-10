@@ -10,7 +10,7 @@ protected:
     bool isStatic = false;
 
 public:
-    SpatialEntity(const std::string& name, float startX, float startY) : Entity(name)  !
+    SpatialEntity(const std::string& name, float startX, float startY) : Entity(name)  
     {
         setPosition(startX, startY); 
     }
