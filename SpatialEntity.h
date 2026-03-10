@@ -5,37 +5,34 @@
 
 class SpatialEntity : public Entity {
 protected:
-    float width = 1.0f;
-    float height = 1.0f;
-    bool is_static = false;
+    float width;
+    float height;
+    bool is_static;
 
 public:
-    SpatialEntity(const std::string& name, float start_x, float start_y)
-        : Entity(name)  // Entity handles position!
-    {
-        set_position(start_x, start_y);  // Use Entity's method
-    }
+    SpatialEntity(const std::string& name, float start_x, float start_y);
+
+    //sz
+    float get_width() const;
+    float get_height() const;
+    void set_size(float w, float h);
+
+    bool get_is_static() const;
+    void set_is_static(bool s);
+
+    //render
+    virtual char get_symbol() const;
+
+    //overrd entity
+    void update(float delta_time) override = 0;
+    void draw(float alpha) override = 0;
+    void on_event(const Event& event) override = 0;
     
-    // Size (specific to SpatialEntity)
-    float get_width() const { return width; }
-    float get_height() const { return height; }
-    void set_size(float w, float h) { width = w; height = h; }
-    
-    // Properties
-    bool get_is_static() const { return is_static; }
-    void set_is_static(bool s) { is_static = s; }
-    
-    // For rendering
-    virtual char get_symbol() const { return '?'; }
-    
-    // SpatialEntity still needs to implement pure virtuals from Entity
-    void update() override = 0;  // Still pure virtual
-    void draw() override = 0;    // Still pure virtual
-    bool get_is_static() const { return isStatic; }
-    void set_is_static(bool s) { isStatic = s; }
-    
-    virtual char get_symbol() const { return '?'; }
-    void update() override = 0;  
-    void draw() override = 0;    
+    //helpers=>phy._hand.
+    float get_left() const;
+    float get_right() const;
+    float get_top() const;
+    float get_bottom() const;
 };
+
 #endif
