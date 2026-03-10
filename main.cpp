@@ -1,91 +1,133 @@
+#include "Player.h"
+#include "PhysicsManager.h"
+#include "InputHandler.h"
+#include "Event.h"
+
 #include <iostream>
 #include <memory>
-#include <vector>
-#include "Entity.h"
+#include <chrono>
 
-// Minimal Player class for demo
-class Player : public Entity {
-public:
-    Player(float x_, float y_) : Entity("Player") { setPosition(x_, y_); }
-
-    void update() override {
-        // Example: could update animations, physics, etc.
-    }
-
-    void draw() override {
-        std::cout << getName() << " at (" << getX() << ", " << getY() << ")\n";
-    }
-};
-
-// Minimal NPC class for demo
-class NPC : public Entity {
-public:
-    NPC(float x_, float y_) : Entity("NPC") { setPosition(x_, y_); }
-
-    void update() override {
-        // Example AI movement could go here
-    }
-
-    void draw() override {
-        std::cout << getName() << " at (" << getX() << ", " << getY() << ")\n";
-    }
-};
-
-// Simple InputHandler for demo
-class InputHandler {
-public:
-    int getInput() {
-        std::cout << "Enter 1 to move right, 2 to quit: ";
-        int cmd;
-        std::cin >> cmd;
-        return cmd;
-    }
-};
-
-// Simple PhysicsManager for demo
-class PhysicsManager {
-public:
-    void move(Entity& e, float dx, float dy) {
-        e.move(dx, dy);
-    }
-
-    bool checkCollision(const Entity& a, const Entity& b) {
-        // Simple collision: same integer position
-        return (static_cast<int>(a.getX()) == static_cast<int>(b.getX()) &&
-                static_cast<int>(a.getY()) == static_cast<int>(b.getY()));
-    }
-};
+#ifdef _WIN32
+#include <windows.h>
+#define SLEEP(milliseconds) Sleep(milliseconds)
+#else
+#include <unistd.h>
+#define SLEEP(milliseconds) usleep(milliseconds * 1000)
+#endif
 
 int main() {
-    InputHandler input;
-    PhysicsManager physics;
+    try {
+        // 1️⃣ Create InputHandler
+        InputHandler input;
 
-    std::vector<std::unique_ptr<Entity>> entities;
-    entities.push_back(std::make_unique<Player>(0, 0));
-    entities.push_back(std::make_unique<NPC>(2, 2));
+        // 2️⃣ Create PhysicsManager
+        PhysicsManager physics;
+        physics.set_gravity(0.0f);
+        physics.enable_collisions(true);
 
-    bool running = true;
-    while (running) {
-        int cmd = input.getInput();
-        if (cmd == 2) {
-            running = false;
-            continue;
+        // 3️⃣ Create a player
+        auto player = std::make_shared<Player>(5.0f, 5.0f);
+        
+        if (!player) {
+            std::cerr << "Failed to create player!" << std::endl;
+            return 1;
         }
 
-        if (cmd == 1) {
-            physics.move(*entities[0], 1, 0); // move player right
+        // 4️⃣ Register player with PhysicsManager
+        physics.register_entity(player);
+
+        // Game loop variables
+        const float TARGET_FPS = 60.0f;
+        const float FRAME_TIME = 1.0f / TARGET_FPS;
+        const int TARGET_FRAME_TIME_MS = static_cast<int>(FRAME_TIME * 1000); // ~16ms for 60 FPS
+        
+        int frameCount = 0;
+        const int MAX_FRAMES = 1000;
+
+        std::cout << "Game started. Target frame time: " << TARGET_FRAME_TIME_MS << "ms" << std::endl;
+
+        // 5️⃣ Run game loop
+        while (frameCount < MAX_FRAMES) {
+            auto frameStart = std::chrono::high_resolution_clock::now();
+
+            // Process input
+            input.process_input();
+
+            // Handle movement events
+#ifdef _WIN32
+            if (input.is_key_pressed(VK_ESCAPE)) {
+                std::cout << "Escape pressed - exiting..." << std::endl;
+                break;
+            }
+
+            if (input.is_key_pressed(VK_UP)) {
+                InputEvent e(EventType::MOVE_UP, "keyboard", VK_UP, true);
+                player->on_event(e);
+            }
+            if (input.is_key_pressed(VK_DOWN)) {
+                InputEvent e(EventType::MOVE_DOWN, "keyboard", VK_DOWN, true);
+                player->on_event(e);
+            }
+            if (input.is_key_pressed(VK_LEFT)) {
+                InputEvent e(EventType::MOVE_LEFT, "keyboard", VK_LEFT, true);
+                player->on_event(e);
+            }
+            if (input.is_key_pressed(VK_RIGHT)) {
+                InputEvent e(EventType::MOVE_RIGHT, "keyboard", VK_RIGHT, true);
+                player->on_event(e);
+            }
+#endif
+
+            // Physics & player update
+            physics.update(FRAME_TIME);
+            player->update(FRAME_TIME);
+
+            // Draw
+            player->draw(FRAME_TIME);
+
+            // Frame rate control - Platform-specific sleep
+            auto frameEnd = std::chrono::high_resolution_clock::now();
+            auto frameDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
+                frameEnd - frameStart);
+            
+            // Calculate sleep time needed to maintain target FPS
+            int sleepTime = TARGET_FRAME_TIME_MS - static_cast<int>(frameDuration.count());
+            
+            if (sleepTime > 0) {
+                SLEEP(sleepTime);
+            } else if (sleepTime < -5) {
+                // If we're running more than 5ms behind, print a warning
+                static int warningCounter = 0;
+                if (++warningCounter % 60 == 0) { // Print once per second approx
+                    std::cout << "Warning: Running behind by " << -sleepTime 
+                              << "ms (Frame took " << frameDuration.count() << "ms)" << std::endl;
+                }
+            }
+
+            frameCount++;
+
+            // Optional FPS display every 60 frames (~1 second at 60 FPS)
+            if (frameCount % 60 == 0) {
+                auto now = std::chrono::high_resolution_clock::now();
+                auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+                    now - frameStart);
+                
+                if (elapsed.count() > 0) {
+                    float fps = 1000.0f / elapsed.count();
+                    std::cout << "Frame " << frameCount << " - FPS: " << fps 
+                              << " (Frame time: " << frameDuration.count() << "ms)" << std::endl;
+                }
+            }
         }
 
-        if (physics.checkCollision(*entities[0], *entities[1])) {
-            std::cout << "Collision!\n";
-        }
+        std::cout << "Game loop ended normally after " << frameCount << " frames." << std::endl;
 
-        for (auto& e : entities) {
-            e->update();
-            e->draw();
-        }
-
-        std::cout << "---------------------\n";
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
+    } catch (...) {
+        std::cerr << "Unknown error occurred!" << std::endl;
+        return 1;
     }
 
     return 0;
