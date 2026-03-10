@@ -17,14 +17,14 @@ void InputHandler::process_input() {
 #endif
 }
 
-bool InputHandler::isKeyPressed(int key) {
+bool InputHandler::is_key_pressed(int key) {
     return keyStates[key] && !previousKeyStates[key];
 }
 
-bool InputHandler::isKeyHeld(int key) {
+bool InputHandler::is_key_held(int key) {
     return keyStates[key];
 }
 
-bool InputHandler::isKeyReleased(int key) {
+bool InputHandler::is_key_released(int key) {
     return !keyStates[key] && previousKeyStates[key];
 }

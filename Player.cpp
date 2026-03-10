@@ -1,9 +1,6 @@
 #include "Player.h"
-<<<<<<< HEAD
 #include "event.h"
-=======
 #include "Event.h"
->>>>>>> origin/arshiyahera-patch-1
 #include <iostream>
 using namespace std;
 
@@ -21,7 +18,7 @@ void Player::draw() {
          << static_cast<int>(get_y()) << ")\n";  
 }
 
-void Player::onEvent(Event& event) {
+void Player::on_event(Event& event) {
     switch (event.type) {
         case EventType::MOVE_UP: 
             set_position(get_x(), get_y() - 1);

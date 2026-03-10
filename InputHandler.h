@@ -11,11 +11,11 @@ private:
 public:
     void process_input();
 
-    bool isKeyPressed(int key);
+    bool is_key_pressed(int key);
 
-    bool isKeyHeld(int key);
+    bool is_key_held(int key);
 
-    bool isKeyReleased(int key);
+    bool is_key_released(int key);
 };
 
 #endif
