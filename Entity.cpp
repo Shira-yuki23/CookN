@@ -1,117 +1,45 @@
-#include "Entity.h"
-<<<<<<< HEAD
-#include "Event.h"  // ✅ Include this if you use events
-#include <iostream>
-#include <string>
 
-std::string Entity::generateUniqueId() {
+#include "Entity.h"
+#include <string>
+#include <sstream>
+
+std::string Entity::generate_unique_id() {
     static int counter = 0;
-    return "E" + std::to_string(counter++);
+    std::ostringstream oss;
+    oss << "e" << counter++;
+    return oss.str();
 }
 
-Entity::Entity(const std::string& entityName)
-    : name(entityName), 
-      isActive(true),
-      tag("")  // ✅ ONLY initialize non-inclass members
+Entity::Entity(const std::string& entity_name)
+    : id(generate_unique_id()), name(entity_name), is_active(true),
+      x(0.0f), y(0.0f), vx(0.0f), vy(0.0f), tag("")
 {
-    id = generateUniqueId();
-    
-    // x,y,prevX,prevY,vx,vy are already 0 from in-class initialization
-    
     std::cout << "Entity created: " << name << " (ID: " << id << ")" << std::endl;
 }
 
-Entity::~Entity() {
-    std::cout << "Entity destroyed: " << name << std::endl;
+std::string Entity::get_id() const { return id; }
+std::string Entity::get_name() const { return name; }
+
+bool Entity::get_is_active() const { return is_active; }
+void Entity::set_is_active(bool active) { is_active = active; }
+
+void Entity::set_position(float new_x, float new_y) {
+    x = new_x;
+    y = new_y;
 }
 
-// Basic getters/setters
-std::string Entity::getId() const { return id; }
-std::string Entity::getName() const { return name; }
-bool Entity::getIsActive() const { return isActive; }
-void Entity::setIsActive(bool active) { isActive = active; }
+float Entity::get_x() const { return x; }
+float Entity::get_y() const { return y; }
 
-void Entity::setPosition(float newX, float newY) {
-    prevX = x;  // Store previous position
-    prevY = y;
-=======
-#include <iostream>
-#include <string>
-
-Entity::Entity(const std::string& entityName)
-    : name(entityName), isActive(true),
-      x(0), y(0), vx(0), vy(0), tag("")   // ✅ Added only necessary initializations
-{
-    id = generateUniqueId();              // kept old ID system
-
-    std::cout << "Entity created: "
-              << name
-              << " (ID: " << id << ")"
-              << std::endl;
-}
-
-std::string Entity::getId() const {
-    return id;
-}
-
-std::string Entity::getName() const {
-    return name;
-}
-
-bool Entity::getIsActive() const {
-    return isActive;
-}
-
-void Entity::setIsActive(bool active) {
-    isActive = active;
-}
-
-std::string Entity::generateUniqueId() {
-    static int counter = 0;
-    return "E" + std::to_string(counter++);
-}
-
-
-
-void Entity::setPosition(float newX, float newY) {
->>>>>>> 29b56c1b6970270daf01c4c6439b989cf6a1884b
-    x = newX;
-    y = newY;
-}
-
-<<<<<<< HEAD
-// Note: getX/getY are inline in header
-=======
-float Entity::getX() const {
-    return x;
-}
-
-float Entity::getY() const {
-    return y;
-}
->>>>>>> 29b56c1b6970270daf01c4c6439b989cf6a1884b
-
-void Entity::setVelocity(float newVx, float newVy) {
-    vx = newVx;
-    vy = newVy;
+void Entity::set_velocity(float new_vx, float new_vy) {
+    vx = new_vx;
+    vy = new_vy;
 }
 
 void Entity::move(float dx, float dy) {
-<<<<<<< HEAD
-    setPosition(x + dx, y + dy);
-}
-
-// Tag methods
-=======
     x += dx;
     y += dy;
 }
 
->>>>>>> 29b56c1b6970270daf01c4c6439b989cf6a1884b
-void Entity::setTag(const std::string& t) {
-    tag = t;
-}
-
-std::string Entity::getTag() const {
-    return tag;
-}
+void Entity::set_tag(const std::string& t) { tag = t; }
+std::string Entity::get_tag() const { return tag; }
