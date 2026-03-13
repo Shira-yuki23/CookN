@@ -1,10 +1,9 @@
 #include "SpatialEntity.h"
 
-SpatialEntity::SpatialEntity(const std::string& name, float start_x, float start_y) : Entity(name), width(1.0f), height(1.0f), is_static(false)
+SpatialEntity::SpatialEntity(const std::string& name, float start_x, float start_y) : Entity(name), width(1.0f), height(1.0f), is_static(false), prev_x(start_x), prev_y(start_y)
 {
     set_position(start_x, start_y);
 }
-
 float SpatialEntity::get_width() const
 {
     return width;
@@ -55,4 +54,14 @@ float SpatialEntity::get_top() const
 float SpatialEntity::get_bottom() const
 {
     return get_y() + height;
+}
+//
+float SpatialEntity::get_prev_x() const
+{
+    return prev_x;
+}
+
+float SpatialEntity::get_prev_y() const
+{
+    return prev_y;
 }
