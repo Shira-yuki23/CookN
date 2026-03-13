@@ -9,6 +9,9 @@ protected:
     float height;
     bool is_static;
 
+    float prev_x;
+    float prev_y;
+
 public:
     SpatialEntity(const std::string& name, float start_x, float start_y);
 
@@ -33,6 +36,11 @@ public:
     float get_right() const;
     float get_top() const;
     float get_bottom() const;
+
+    //prev_position
+    float get_prev_x() const;
+    float get_prev_y() const;
+
 };
 
 #endif
