@@ -1,79 +1,67 @@
 #include "Player.h"
-#include "event.h"
+#include "Event.h"
 #include <iostream>
 
-Player::Player(int startX, int startY)
+using namespace std;
+
+Player::Player(float startX, float startY)
     : SpatialEntity("Player", startX, startY)
 {
-    // ✅ Constructor uses base class SpatialEntity
+    set_velocity(0.0f, 0.0f);
 }
 
-void Player::move(int dx, int dy) {
-    Entity::move(static_cast<float>(dx), static_cast<float>(dy));  
-    // ✅ Uses base move() now
+void Player::update(float delta_time)
+{
+    // Move according to velocity
+    set_position(
+        get_x() + get_vx() * delta_time,
+        get_y() + get_vy() * delta_time
+    );
 }
 
-void Player::update(float deltaTime) {  
-    x += vx * deltaTime;  
-    y += vy * deltaTime;  
-    // ✅ Update uses velocity and deltaTime from base
+void Player::draw(float alpha)
+{
+    cout << "Player at ("
+         << static_cast<int>(get_x()) << ","
+         << static_cast<int>(get_y()) << ")\n";
 }
 
-void Player::render() {
-    std::cout << "Player at (" << static_cast<int>(x) << "," << static_cast<int>(y) << ")\n";  
-    // ✅ Uses base x,y
-}
+void Player::on_event(const Event& event)
+{
+    if (auto input = dynamic_cast<const InputEvent*>(&event))
+    {
+        float speed = 100.0f; // units per second
 
-// --- Complete event handling ---
-void Player::onEvent(Event& event) {
-    switch (event.type) {
+        switch (input->type)
+        {
+            case EventType::MOVE_UP:
+                set_velocity(get_vx(), -speed);
+                break;
+            case EventType::MOVE_DOWN:
+                set_velocity(get_vx(), speed);
+                break;
+            case EventType::MOVE_LEFT:
+                set_velocity(-speed, get_vy());
+                break;
+            case EventType::MOVE_RIGHT:
+                set_velocity(speed, get_vy());
+                break;
 
-        // --- Input Events ---
-        case EventType::MOVE_UP: move(0, -1); break;
-        case EventType::MOVE_DOWN: move(0, 1); break;
-        case EventType::MOVE_LEFT: move(-1, 0); break;
-        case EventType::MOVE_RIGHT: move(1, 0); break;
-        case EventType::ATTACK:
-            std::cout << name << " attacks!\n"; break;
-        case EventType::INTERACT:
-            std::cout << name << " interacts!\n"; break;
-        case EventType::PAUSE:
-            std::cout << "Game paused\n"; break;
-        case EventType::QUIT:
-            std::cout << "Player quits game\n"; break;
+            case EventType::MOVE_UP_RELEASE:
+            case EventType::MOVE_DOWN_RELEASE:
+                set_velocity(get_vx(), 0.0f);
+                break;
+            case EventType::MOVE_LEFT_RELEASE:
+            case EventType::MOVE_RIGHT_RELEASE:
+                set_velocity(0.0f, get_vy());
+                break;
 
-        // --- Collision Events ---
-        case EventType::COLLISION:
-            vx = 0; vy = 0;
-            std::cout << name << " collided with entity " << event.senderID << "\n"; break;
-        case EventType::BLOCKED:
-            std::cout << name << " is blocked by " << event.senderID << "\n"; break;
-        case EventType::ITEM_COLLECTED:
-            std::cout << name << " collected an item!\n"; break;
+            case EventType::ATTACK:
+                cout << get_name() << " attacks!\n";
+                break;
 
-        // --- Combat Events ---
-        case EventType::DAMAGE_TAKEN:
-            std::cout << name << " took " << event.value << " damage!\n"; break;
-        case EventType::HEAL:
-            std::cout << name << " healed " << event.value << " HP!\n"; break;
-        case EventType::DEATH:
-            isActive = false;
-            std::cout << name << " died!\n"; break;
-
-        // --- Scene Events ---
-        case EventType::SCENE_SWITCH:
-            std::cout << name << " switching scene to " << event.senderID << "\n"; break;
-        case EventType::LEVEL_COMPLETE:
-            std::cout << name << " completed level!\n"; break;
-        case EventType::GAME_OVER:
-            std::cout << "Game Over for " << name << "\n"; break;
-
-        // --- Entity Lifecycle ---
-        case EventType::SPAWN:
-            isActive = true; break;
-        case EventType::DESTROY:
-            isActive = false; break;
-
-        default: break; // Unknown events ignored
+            default:
+                break;
+        }
     }
 }
