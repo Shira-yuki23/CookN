@@ -1,101 +1,92 @@
-#include <iostream>
-#include <memory>
-#include <vector>
-#include "Entity.h"
-#include "SpatialEntity.h"
-#include "Player.h"
-#include "NPC.h"
+ #include "Player.h"
 #include "PhysicsManager.h"
 #include "InputHandler.h"
-// === My SceneManager & Utils integration start ===
-#include "Scenes/SceneManager.h"
-#include "Scenes/SceneFactory.h"
-#include "Scenes/GameScene.h"
-#include "Scenes/MenuScene.h"
-#include "Scenes/PauseScene.h"
+#include "Event.h"
 
-#include "Utils/ConfigManager.h"
-#include "Utils/Logger.h"
-#include "Utils/Timer.h"
-#include "Utils/InputManager.h"
-#include "Utils/EventDispatcher.h"
-// === My SceneManager & Utils integration end ===
+#include "SceneManager.h"
+#include "SceneFactory.h"
+#include "ConfigManager.h"
+#include "ResourceManager.h"
+#include "EventDispatcher.h"
+
+#include <iostream>
+#include <memory>
+#include <chrono>
+
+#ifdef _WIN32
+#include <windows.h>
+#define SLEEP(milliseconds) Sleep(milliseconds)
+#else
+#include <unistd.h>
+#define SLEEP(milliseconds) usleep(milliseconds * 1000)
+#endif
 
 int main() {
-    // Create input and physics managers
-    InputHandler input;
-    PhysicsManager physics;
+    try {
+        // 🔹 Input system
+        InputHandler input;
 
-    // --- My Utils & SceneManager setup ---
-ConsoleLogger consoleLogger;
-FileLogger fileLogger("game_log.txt");
-auto config = ConfigManager::GetInstance();
-Timer deltaTimer;
-EventDispatcher eventDispatcher;
+        // 🔹 Utility systems
+        ConfigManager::getInstance().load_config("config.txt");
+        ResourceManager::getInstance().initialize();
+        EventDispatcher::getInstance().initialize();
 
-// SceneManager setup
-SceneManager sceneManager;
-sceneManager.createAndAddScene("Menu");
-sceneManager.createAndAddScene("Game");
-sceneManager.createAndAddScene("Pause");
+        // 🔹 Scene system
+        SceneManager sceneManager;
+        SceneFactory::registerScenes();
 
-// Switch to starting scene
-sceneManager.switchScene("Menu");
-// === End of my insertion ===
+        sceneManager.changeScene("GameScene"); // or "MenuScene"
 
-    // Create entities
-    std::vector<std::unique_ptr<Entity>> entities;
+        // Game loop settings
+        const float TARGET_FPS = 60.0f;
+        const float FRAME_TIME = 1.0f / TARGET_FPS;
+        const int TARGET_FRAME_TIME_MS = static_cast<int>(FRAME_TIME * 1000);
 
-    auto player = std::make_unique<Player>(0, 0);   // x=0, y=0
-    auto npc = std::make_unique<NPC>(2, 2);         // x=2, y=2
+        int frameCount = 0;
+        const int MAX_FRAMES = 1000;
 
-    entities.push_back(std::move(player));
-    entities.push_back(std::move(npc));
+        std::cout << "Game started with Scene System." << std::endl;
 
-    bool running = true;
-    while (running) {
-        // Get input (for demo, just 1 = move right, 2 = quit)
-        float deltaTime = 0.016f; // fixed ~60 FPS
-deltaTimer.update(deltaTime);
+        while (frameCount < MAX_FRAMES) {
+            auto frameStart = std::chrono::high_resolution_clock::now();
 
-// Update current scene
-if (auto current = sceneManager.getCurrentScene()) {
-    current->update(deltaTime);
-}
+            // 🔹 Input
+            input.process_input();
 
-// Optional: Scene switching via InputManager
-if (InputManager::Pause()) {
-    sceneManager.switchScene("Pause");
-} else if (InputManager::Start()) {
-    sceneManager.switchScene("Game");
-}
-        int cmd = input.getInput();
-        if (cmd == 2) {
-            running = false;
-            continue;
+#ifdef _WIN32
+            if (input.is_key_pressed(VK_ESCAPE)) {
+                std::cout << "Escape pressed - exiting..." << std::endl;
+                break;
+            }
+#endif
+
+            // 🔹 Event system
+            EventDispatcher::getInstance().processEvents();
+
+            // 🔹 Scene update & render
+            sceneManager.update(FRAME_TIME);
+            sceneManager.render(FRAME_TIME);
+
+            // 🔹 Frame control
+            auto frameEnd = std::chrono::high_resolution_clock::now();
+            auto frameDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
+                frameEnd - frameStart);
+
+            int sleepTime = TARGET_FRAME_TIME_MS - static_cast<int>(frameDuration.count());
+
+            if (sleepTime > 0) {
+                SLEEP(sleepTime);
+            }
+
+            frameCount++;
         }
 
-        // Update positions via physics
-        if (cmd == 1) {
-            physics.move(*dynamic_cast<SpatialEntity*>(entities[0].get()), 1, 0);
-        }
+        std::cout << "Game loop ended after " << frameCount << " frames." << std::endl;
 
-        // Check collision
-        if (physics.checkCollision(
-                *dynamic_cast<SpatialEntity*>(entities[0].get()),
-                *dynamic_cast<SpatialEntity*>(entities[1].get()))) {
-            std::cout << "Collision!\n";
-        }
-
-        // Update & render all entities
-        for (auto& e : entities) {
-            e->update(0.016f);   // deltaTime ~16ms
-            e->render();
-        }
-
-        std::cout << "----------------------\n";
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
     }
-
 
     return 0;
 }
