@@ -29,4 +29,5 @@ public:
     std::shared_ptr<Scene> getCurrentScene() const;
 
     void printAllScenes() const;
+    void createAndAddScene(const std::string& sceneName);
 };
