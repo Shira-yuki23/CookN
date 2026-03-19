@@ -1,13 +1,15 @@
 #include "engine.h"
 #include <iostream>
-#include <chrono>
-#include <thread>
 #include <algorithm>
-#include "scene.h"
-#include "entity.h"
-#include "input_handler.h" 
+#include <windows.h>
+#include <thread>
+#include <chrono>
+#include "Scene.h"
+#include "Entity.h"
+#include "InputHandler.h" 
 #include "renderer.h"
-#include "physics_manager.h"  
+#include "PhysicsManager.h" 
+#include "Event.h" 
 
 using namespace std::chrono;
 
@@ -97,7 +99,8 @@ void Engine::run()
         {
            
             float alpha = static_cast<float>(lag / target_frame_time);
-            alpha = std::clamp(alpha, 0.0f, 1.0f);
+            if (alpha < 0.0f) alpha = 0.0f;
+            if (alpha > 1.0f) alpha = 1.0f;
             renderer->render(current_scene.get(), alpha);
         }
         
@@ -117,13 +120,17 @@ void Engine::run()
             last_frame_count = frame_count;
         }
 
-        auto frame_end = high_resolution_clock::now();
+                auto frame_end = high_resolution_clock::now();
         double frame_duration = duration<double>(frame_end - current_time).count();
         
         if (frame_duration < target_frame_time)  
         {
-            auto sleep_time = duration<double>(target_frame_time - frame_duration);
-            std::this_thread::sleep_for(sleep_time);
+            // Calculate sleep time in milliseconds
+            int sleep_ms = static_cast<int>((target_frame_time - frame_duration) * 1000);
+            
+            // Use milliseconds directly - this works with older GCC
+            std::chrono::milliseconds sleep_duration(sleep_ms);
+            Sleep(sleep_ms);
         }
     }
 }
@@ -147,7 +154,7 @@ void Engine::add_scene(std::shared_ptr<Scene> scene)
     if (scene)
     {
         scenes.push_back(scene);
-        std::cout << "[ENGINE] Scene added: " << scene->get_name() << std::endl;
+        std::cout << "[ENGINE] Scene added: " << scene->getName() << std::endl;
     }
 }
 
@@ -157,7 +164,7 @@ void Engine::load_scene(const std::string& scene_name)
     
     for (auto& scene : scenes)
     {
-        if (scene->get_name() == scene_name)
+        if (scene->getName() == scene_name)
         {
             current_scene = scene;
             std::cout << "[ENGINE] Scene loaded: " << scene_name << std::endl;
@@ -172,7 +179,7 @@ bool Engine::switch_scene(const std::string& scene_name)
 {
     for(auto& scene : scenes)
     {
-        if(scene->get_name() == scene_name)
+        if(scene->getName() == scene_name)
         {
             current_scene = scene;
             std::cout << "[ENGINE] Switched to scene: " << scene_name << std::endl;
