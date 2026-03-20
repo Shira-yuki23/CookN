@@ -19,6 +19,7 @@ Engine::Engine()
     , delta_time(0.0f)
     , frame_count(0)
     , target_fps(60)  
+    , current_fps(0)
 {
     std::cout << "[ENGINE] Engine created" << std::endl;
 }
@@ -33,6 +34,23 @@ void Engine::initialize()
     std::cout << "[ENGINE] Initializing..." << std::endl;
     
     input_handler = std::make_unique<InputHandler>();
+    
+    // Connect input events to the current scene's entities
+    input_handler->on_input_event = [this](const InputEvent& event) {
+        if (event.type == EventType::QUIT) {
+            is_running = false;
+        }
+
+        if (current_scene) {
+            auto entities = current_scene->getEntities();
+            for (auto& entity : entities) {
+                if (entity) {
+                    entity->on_event(event);
+                }
+            }
+        }
+    };
+
     renderer = std::make_unique<Renderer>();  
     physics_manager = std::make_unique<PhysicsManager>();
     
@@ -58,6 +76,12 @@ void Engine::run()
     std::cout << "[ENGINE] Game loop started" << std::endl;
     std::cout << "----------------------------------------" << std::endl;
     
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+
     const double target_frame_time = 1.0 / target_fps; 
     
     auto previous_time = high_resolution_clock::now();
@@ -101,7 +125,7 @@ void Engine::run()
             float alpha = static_cast<float>(lag / target_frame_time);
             if (alpha < 0.0f) alpha = 0.0f;
             if (alpha > 1.0f) alpha = 1.0f;
-            renderer->render(current_scene.get(), alpha);
+            renderer->render(current_scene.get(), alpha, current_fps);
         }
         
         frame_count++;
@@ -114,8 +138,7 @@ void Engine::run()
         
         if (time_since_last_fps >= 1.0) 
         {
-            int fps = frame_count - last_frame_count;
-            std::cout << "[ENGINE] FPS: " << fps << std::endl;
+            current_fps = frame_count - last_frame_count;
             last_fps_time = now;
             last_frame_count = frame_count;
         }
@@ -213,7 +236,7 @@ void Engine::add_entity(std::shared_ptr<Entity> entity)
 {
     if (current_scene && entity)
     {
-        current_scene->add_entity(entity);
+        current_scene->addEntity(entity);
         std::cout << "[ENGINE] Entity added to current scene" << std::endl;
     }
 }
@@ -222,7 +245,7 @@ void Engine::remove_entity(const std::string& entity_id)
 {
     if (current_scene)
     {
-        current_scene->remove_entity(entity_id);
+        current_scene->removeEntity(entity_id);
         std::cout << "[ENGINE] Entity removed: " << entity_id << std::endl;
     }
 }

@@ -14,7 +14,7 @@ Entity::Entity(const std::string& entity_name)
     : id(generate_unique_id()), name(entity_name), is_active(true),
       x(0.0f), y(0.0f), vx(0.0f), vy(0.0f), tag("")
 {
-    std::cout << "Entity created: " << name << " (ID: " << id << ")" << std::endl;
+    // std::cout << "Entity created: " << name << " (ID: " << id << ")" << std::endl;
 }
 
 std::string Entity::get_id() const { return id; }

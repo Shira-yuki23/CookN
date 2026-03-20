@@ -35,10 +35,12 @@ void NPC::update(float delta_time)
 
 void NPC::draw(float alpha)
 {
+    /*
     std::cout << "NPC [" << get_name() << "] "
               << "pos(" << get_x() << "," << get_y() << ") "
               << "HP:" << health << "/" << max_health
               << std::endl;
+    */
 }
 
 void NPC::on_event(const Event& event)
@@ -61,11 +63,11 @@ void NPC::on_event(const Event& event)
 
         // player interaction
         case EventType::INTERACT:
-            std::cout << get_name() << " says hello.\n";
+            // std::cout << get_name() << " says hello.\n";
             break;
 
         case EventType::ATTACK:
-            std::cout << get_name() << " is being attacked!\n";
+            // std::cout << get_name() << " is being attacked!\n";
             break;
 
         case EventType::PAUSE:
@@ -74,7 +76,7 @@ void NPC::on_event(const Event& event)
 
         // physics
         case EventType::COLLISION:
-            std::cout << get_name() << " collided with something.\n";
+            // std::cout << get_name() << " collided with something.\n";
             moving_left = !moving_left;
             break;
 
@@ -96,7 +98,7 @@ void NPC::on_event(const Event& event)
 
         case EventType::DEATH:
             set_is_active(false);
-            std::cout << get_name() << " died.\n";
+            // std::cout << get_name() << " died.\n";
             break;
 
         // scene system
@@ -107,12 +109,12 @@ void NPC::on_event(const Event& event)
 
         // lifecycle
         case EventType::SPAWN:
-            std::cout << get_name() << " spawned.\n";
+            // std::cout << get_name() << " spawned.\n";
             break;
 
         case EventType::DESTROY:
             set_is_active(false);
-            std::cout << get_name() << " destroyed.\n";
+            // std::cout << get_name() << " destroyed.\n";
             break;
 
         case EventType::NONE:
@@ -125,14 +127,14 @@ void NPC::take_damage(int amount)
 {
     health -= amount;
 
-    std::cout << get_name() << " took " << amount << " damage.\n";
+    // std::cout << get_name() << " took " << amount << " damage.\n";
 
     if (health <= 0)
     {
         health = 0;
         set_is_active(false);
 
-        std::cout << get_name() << " has died.\n";
+        // std::cout << get_name() << " has died.\n";
     }
 }
 
@@ -143,7 +145,7 @@ void NPC::heal(int amount)
     if (health > max_health)
         health = max_health;
 
-    std::cout << get_name() << " healed " << amount << " HP.\n";
+    // std::cout << get_name() << " healed " << amount << " HP.\n";
 }
 
 bool NPC::is_alive() const

@@ -1,7 +1,6 @@
  #include "SceneManager.h"
  #include "../Utils/DebugAssert.h"
 #include "SceneFactory.h"
-class Scene;  
 #include <memory>
 #include <map>
 #include <stack>
@@ -51,44 +50,13 @@ void SceneManager::removeScene(const std::string& sceneName) {
         currentScene = nullptr;
 }
 
-void SceneManager::switchScene(const std::string& sceneName) {
-
-    if (scenes.find(sceneName) != scenes.end()) {
-
-        currentScene = scenes[sceneName];
-
-        std::cout << "[SceneManager] Switched to scene: "
-                  << sceneName << std::endl;
-
-        currentScene->update(0.0f);
-    }
-    else {
-
-        std::cerr << "[SceneManager] Scene not found: "
-                  << sceneName << std::endl;
-    }
-}
-
-std::shared_ptr<Scene> SceneManager::getCurrentScene() const {
-    return currentScene;
-}
-
-void SceneManager::printAllScenes() const {
-
-    std::cout << "[SceneManager] Scenes list:" << std::endl;
-
-    for (auto& pair : scenes) {
-        std::cout << " - " << pair.first << std::endl;
-    }
-}
-
 void SceneManager::switchScene(const std::string& sceneName)
 {
     if (scenes.find(sceneName) != scenes.end())
     {
         if (currentScene)
         {
-            sceneHistory.push(currentScene->getName()); // save history
+            sceneHistory.push(currentScene->getName());
         }
 
         currentScene = scenes[sceneName];
@@ -101,6 +69,11 @@ void SceneManager::switchScene(const std::string& sceneName)
     {
         std::cerr << "[SceneManager] Scene not found: " << sceneName << std::endl;
     }
+}
+
+void SceneManager::changeScene(const std::string& sceneName)
+{
+    switchScene(sceneName);
 }
 
 void SceneManager::goBack()
@@ -119,5 +92,30 @@ void SceneManager::goBack()
     else
     {
         std::cout << "[SceneManager] No previous scene in history." << std::endl;
+    }
+}
+
+std::shared_ptr<Scene> SceneManager::getCurrentScene() const {
+    return currentScene;
+}
+
+void SceneManager::printAllScenes() const {
+
+    std::cout << "[SceneManager] Scenes list:" << std::endl;
+
+    for (auto& pair : scenes) {
+        std::cout << " - " << pair.first << std::endl;
+    }
+}
+
+void SceneManager::update(float deltaTime) {
+    if (currentScene) {
+        currentScene->update(deltaTime);
+    }
+}
+
+void SceneManager::render(float deltaTime) {
+    if (currentScene) {
+        currentScene->render();
     }
 }

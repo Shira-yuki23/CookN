@@ -21,9 +21,11 @@ void Player::update(float delta_time)
 
 void Player::draw(float alpha)
 {
+    /*
     cout << "Player at ("
          << static_cast<int>(get_x()) << ","
          << static_cast<int>(get_y()) << ")\n";
+    */
 }
 
 void Player::on_event(const Event& event)
@@ -57,7 +59,7 @@ void Player::on_event(const Event& event)
                 break;
 
             case EventType::ATTACK:
-                cout << get_name() << " attacks!\n";
+                // cout << get_name() << " attacks!\n";
                 break;
 
             default:

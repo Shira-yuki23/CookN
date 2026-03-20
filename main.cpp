@@ -1,92 +1,40 @@
- #include "Player.h"
-#include "PhysicsManager.h"
-#include "InputHandler.h"
-#include "Event.h"
-
-#include "SceneManager.h"
-#include "SceneFactory.h"
-#include "ConfigManager.h"
-#include "ResourceManager.h"
-#include "EventDispatcher.h"
-
-#include <iostream>
+#include "Engine.h"
+#include "Player.h"
+#include "NPC.h"
 #include <memory>
-#include <chrono>
+#include <iostream>
 
 #ifdef _WIN32
 #include <windows.h>
-#define SLEEP(milliseconds) Sleep(milliseconds)
-#else
-#include <unistd.h>
-#define SLEEP(milliseconds) usleep(milliseconds * 1000)
 #endif
 
 int main() {
-    try {
-        // 🔹 Input system
-        InputHandler input;
+    std::cout << "=== CookN Engine Demo ===" << std::endl;
+    std::cout << "IMPORTANT: Please resize your console window to at least 80x25 characters." << std::endl;
+    std::cout << "Use the ARROW KEYS to move the Player." << std::endl;
+    std::cout << "Press ESC to Quit." << std::endl;
+    std::cout << "Starting in 2 seconds..." << std::endl;
+    
+    Sleep(2000); // Give user time to see instructions and resize
 
-        // 🔹 Utility systems
-        ConfigManager::getInstance().load_config("config.txt");
-        ResourceManager::getInstance().initialize();
-        EventDispatcher::getInstance().initialize();
+    Engine engine;
+    engine.initialize();
 
-        // 🔹 Scene system
-        SceneManager sceneManager;
-        SceneFactory::registerScenes();
+    // Add game entities to the current scene
+    auto player = std::make_shared<Player>(10.0f, 10.0f);
+    auto guard = std::make_shared<NPC>("Guard", 20.0f, 10.0f);
+    auto villager = std::make_shared<NPC>("Villager", 15.0f, 25.0f);
+    auto shopkeeper = std::make_shared<NPC>("Shopkeeper", 30.0f, 30.0f);
 
-        sceneManager.changeScene("GameScene"); // or "MenuScene"
+    engine.add_entity(player);
+    engine.add_entity(guard);
+    engine.add_entity(villager);
+    engine.add_entity(shopkeeper);
 
-        // Game loop settings
-        const float TARGET_FPS = 60.0f;
-        const float FRAME_TIME = 1.0f / TARGET_FPS;
-        const int TARGET_FRAME_TIME_MS = static_cast<int>(FRAME_TIME * 1000);
+    // Run the game loop
+    engine.run();
+    engine.shutdown();
 
-        int frameCount = 0;
-        const int MAX_FRAMES = 1000;
-
-        std::cout << "Game started with Scene System." << std::endl;
-
-        while (frameCount < MAX_FRAMES) {
-            auto frameStart = std::chrono::high_resolution_clock::now();
-
-            // 🔹 Input
-            input.process_input();
-
-#ifdef _WIN32
-            if (input.is_key_pressed(VK_ESCAPE)) {
-                std::cout << "Escape pressed - exiting..." << std::endl;
-                break;
-            }
-#endif
-
-            // 🔹 Event system
-            EventDispatcher::getInstance().processEvents();
-
-            // 🔹 Scene update & render
-            sceneManager.update(FRAME_TIME);
-            sceneManager.render(FRAME_TIME);
-
-            // 🔹 Frame control
-            auto frameEnd = std::chrono::high_resolution_clock::now();
-            auto frameDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
-                frameEnd - frameStart);
-
-            int sleepTime = TARGET_FRAME_TIME_MS - static_cast<int>(frameDuration.count());
-
-            if (sleepTime > 0) {
-                SLEEP(sleepTime);
-            }
-
-            frameCount++;
-        }
-
-        std::cout << "Game loop ended after " << frameCount << " frames." << std::endl;
-
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return 1;
-    }
-
+    std::cout << "=== Demo Complete ===" << std::endl;
     return 0;
 }
