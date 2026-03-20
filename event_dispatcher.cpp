@@ -8,19 +8,13 @@ void EventDispatcher::subscribe(const std::string& entity_id, EventCallback call
 
 void EventDispatcher::enqueue_event(std::unique_ptr<Event> event)
 {
-    std::lock_guard<std::mutex> lock(queue_mutex);
     event_queue.push(std::move(event));
 }
 
 void EventDispatcher::process_events()
 {
     std::queue<std::unique_ptr<Event>> local_queue;
-
-    // Move events into a local queue to minimize lock time
-    {
-        std::lock_guard<std::mutex> lock(queue_mutex);
-        std::swap(local_queue, event_queue);
-    }
+    std::swap(local_queue, event_queue);
 
     while (!local_queue.empty())
     {
@@ -30,9 +24,9 @@ void EventDispatcher::process_events()
         // Broadcast to all subscribers if target_id is empty
         if (event->target_id.empty())
         {
-            for (auto& [entity_id, callbacks] : subscribers)
+            for (auto& pair : subscribers)
             {
-                for (auto& cb : callbacks)
+                for (auto& cb : pair.second)
                 {
                     cb(*event);
                 }

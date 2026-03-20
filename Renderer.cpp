@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "Scene.h"
+#include "Entity.h"
 #include <iostream>
 #include <algorithm>
 #include <memory>
@@ -16,7 +17,7 @@ Renderer::Renderer(int console_width, int console_height)
     screen_buffer.resize(height, std::string(width, ' '));
     back_buffer.resize(height, std::string(width, ' '));
     
-    std::cout << "[RENDERER] Initialized (" << width << "x" << height << ")" << std::endl;
+    hide_cursor();
 }
 
 Renderer::~Renderer()
@@ -25,14 +26,14 @@ Renderer::~Renderer()
     std::cout << "[RENDERER] Shutdown" << std::endl;
 }
 
-void Renderer::render(Scene* scene, float alpha)
+void Renderer::render(Scene* scene, float alpha, int fps)
 {
     if (!scene) return;
     
     clear_buffer();
     draw_border();
     
-    const auto& entities = scene->get_entities();  
+    const auto& entities = scene->getEntities();  
 
     for (const auto& entity : entities)
     {
@@ -43,8 +44,12 @@ void Renderer::render(Scene* scene, float alpha)
         }
     }
     
-    draw_text(2, 0, "Scene: " + scene->get_name());
+    draw_text(2, 0, "Scene: " + scene->getName());
     draw_text(width - 20, 0, "Alpha: " + std::to_string(alpha).substr(0, 4));
+    
+    if (fps >= 0) {
+        draw_text(width - 32, 0, "FPS: " + std::to_string(fps));
+    }
     
     swap_buffers();
     display();
@@ -101,20 +106,11 @@ void Renderer::draw_entity(const std::shared_ptr<SpatialEntity>& spatial_entity,
     int y = static_cast<int>(spatial_entity->get_prev_y() + 
                              (spatial_entity->get_y() - spatial_entity->get_prev_y()) * alpha);
     
-    x = std::clamp(x, 1, width - 2);
-    y = std::clamp(y, 1, height - 2);
+    if (x < 1) x = 1; if (x > width - 2) x = width - 2;
+    if (y < 1) y = 1; if (y > height - 2) y = height - 2;
     
     char symbol = spatial_entity->get_symbol();
     back_buffer[y][x] = symbol;
-    
-    if (x < width - 10)
-    {
-        std::string info = spatial_entity->get_name().substr(0, 5);
-        for (size_t i = 0; i < info.length() && x + i + 1 < width - 1; i++)
-        {
-            back_buffer[y][x + i + 1] = info[i];
-        }
-    }
 }
 
 void Renderer::draw_text(int x, int y, const std::string& text)
@@ -153,15 +149,46 @@ void Renderer::clear()
 
 void Renderer::display()
 {
-    #ifdef _WIN32
-    system("cls");
-    #else
-    system("clear");
-    #endif
+    set_cursor_position(0, 0);
 
-    for (const auto& line : screen_buffer)
+    // Optimize output by using a single string for the whole frame
+    std::string frame;
+    frame.reserve(height * (width + 1));
+    for (int i = 0; i < height; i++)
     {
-        std::cout << line << std::endl;
+        frame += screen_buffer[i];
+        if (i < height - 1) { // Avoid newline on the very last line to prevent scrolling
+            frame += '\n';
+        }
+    }
+    std::cout << frame << std::flush;
+}
+
+void Renderer::hide_cursor()
+{
+#ifdef _WIN32
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_CURSOR_INFO cursorInfo;
+    GetConsoleCursorInfo(hConsole, &cursorInfo);
+    cursorInfo.bVisible = FALSE;
+    SetConsoleCursorInfo(hConsole, &cursorInfo);
+#else
+    std::cout << "\033[?25l" << std::flush; // ANSI hide cursor
+#endif
+}
+
+void Renderer::set_cursor_position(int x, int y)
+{
+#ifdef _WIN32
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD coord = { (SHORT)x, (SHORT)y };
+    SetConsoleCursorPosition(hConsole, coord);
+#endif
+    // ANSI escape sequence for cursor positioning (Home or specific position)
+    if (x == 0 && y == 0) {
+        std::cout << "\033[H" << std::flush;
+    } else {
+        std::cout << "\033[" << (y + 1) << ";" << (x + 1) << "H" << std::flush;
     }
 }
 

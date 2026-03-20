@@ -2,29 +2,28 @@
 #define SCENE_H
 
 #include <string>
-#include "entity_manager.h"
+#include <vector>
+#include <memory>
+#include <algorithm>
 
-class Scene {
+class Entity;
+
+class Scene 
+{
 private:
     std::string name;
-    EntityManager entityManager;  // Handles all entities in this scene
-
+    std::vector<std::shared_ptr<Entity>> entities;
 public:
     Scene() = default;
     Scene(const std::string& sceneName);
-
     void setName(const std::string& sceneName);
     std::string getName() const;
-
-    // Access the EntityManager to add/remove entities
-    EntityManager& getEntityManager();
-
-    // Scene lifecycle
-    void load();   // Load initial entities
-    void reset();  // Reset entities to initial state
-
-    void update(float deltaTime);  // Update all entities
-    void render();                 // Render all entities
+    void addEntity(std::shared_ptr<Entity> entity);
+    void removeEntity(std::shared_ptr<Entity> entity);
+    void removeEntity(const std::string& entityId);
+    std::vector<std::shared_ptr<Entity>> getEntities() const;
+    virtual void update(float deltaTime);
+    virtual void render();
 };
 
 #endif

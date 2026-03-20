@@ -23,7 +23,7 @@ void EntityManager::removeEntity(const std::string& id)
             entities.end(),
             [&id](Entity* e)
             {
-                if (e->getId() == id)
+                if (e->get_id() == id)
                 {
                     delete e;
                     return true;
@@ -37,7 +37,7 @@ Entity* EntityManager::getEntityById(const std::string& id)
 {
     for (auto entity : entities)
     {
-        if (entity->getId() == id)
+        if (entity->get_id() == id)
         {
             return entity;
         }
@@ -49,7 +49,7 @@ void EntityManager::updateAll(float deltaTime)
 {
     for (auto entity : entities)
     {
-        if (entity->getIsActive())
+        if (entity->get_is_active())
         {
             entity->update(deltaTime);
         }
@@ -60,9 +60,9 @@ void EntityManager::renderAll()
 {
     for (auto entity : entities)
     {
-        if (entity->getIsActive())
+        if (entity->get_is_active())
         {
-            entity->render();
+            entity->draw(0.0f);
         }
     }
 }
@@ -71,9 +71,9 @@ void EntityManager::broadcastEvent(Event& event)
 {
     for (auto entity : entities)
     {
-        if (entity->getIsActive())
+        if (entity->get_is_active())
         {
-            entity->onEvent(event);
+            entity->on_event(event);
         }
     }
 }

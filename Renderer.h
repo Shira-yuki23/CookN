@@ -23,12 +23,14 @@ private:
     void draw_entity(const std::shared_ptr<SpatialEntity>& entity, float alpha); 
     void draw_text(int x, int y, const std::string& text);
     void set_pixel(int x, int y, char c);
+    void set_cursor_position(int x, int y);
+    void hide_cursor();
     
 public:
     Renderer(int console_width = 80, int console_height = 25);
     ~Renderer();
 
-    void render(Scene* scene, float alpha);
+    void render(Scene* scene, float alpha, int fps = -1);
     void clear();
     void display();
     void set_size(int w, int h);

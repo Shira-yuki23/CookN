@@ -1,14 +1,13 @@
 #ifndef EVENT_DISPATCHER_H
 #define EVENT_DISPATCHER_H
 
-#include "event.h"
-#include "entity.h"
+#include "Event.h"
+#include "Entity.h"
 #include <functional>
 #include <vector>
 #include <queue>
 #include <unordered_map>
 #include <memory>
-#include <mutex>
 
 class EventDispatcher {
 public:
@@ -17,7 +16,6 @@ public:
 private:
     std::unordered_map<std::string, std::vector<EventCallback>> subscribers;
     std::queue<std::unique_ptr<Event>> event_queue;
-    std::mutex queue_mutex;
 
 public:
     EventDispatcher() = default;

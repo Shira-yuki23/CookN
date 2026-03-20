@@ -12,7 +12,8 @@ static EventType key_to_event(int key, bool pressed) {
         case VK_DOWN:  return pressed ? EventType::MOVE_DOWN : EventType::MOVE_DOWN_RELEASE;
         case VK_LEFT:  return pressed ? EventType::MOVE_LEFT : EventType::MOVE_LEFT_RELEASE;
         case VK_RIGHT: return pressed ? EventType::MOVE_RIGHT: EventType::MOVE_RIGHT_RELEASE;
-        case VK_SPACE: return EventType::ATTACK;  // no release for attack
+        case VK_SPACE: return pressed ? EventType::ATTACK : EventType::NONE;
+        case VK_ESCAPE:return pressed ? EventType::QUIT : EventType::NONE;
         default: return EventType::NONE;
     }
 }

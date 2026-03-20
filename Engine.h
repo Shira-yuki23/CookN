@@ -24,6 +24,7 @@ private:
     float delta_time;
     int frame_count;
     int target_fps;
+    int current_fps;
     std::chrono::high_resolution_clock::time_point last_frame_time;
     void calculate_delta_time();
 public:
