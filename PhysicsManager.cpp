@@ -1,22 +1,22 @@
 #include "PhysicsManager.h"
 #include <algorithm>
-#include <iostream> // optional, for debug prints
+#include <iostream> //for debug prints
 
-// Register a new entity to the physics system
+//Register a new entity to the physics system
 void PhysicsManager::register_entity(std::shared_ptr<SpatialEntity> entity) {
     if (entity && std::find(entities.begin(), entities.end(), entity) == entities.end()) {
         entities.push_back(entity);
-        // std::cout << "[PHYSICS] Entity registered\n";
+        //std::cout << "[PHYSICS] Entity registered\n";
     }
 }
 
-// Remove an entity from the physics system
+//Remove an entity from the physics system
 void PhysicsManager::unregister_entity(std::shared_ptr<SpatialEntity> entity) {
     entities.erase(std::remove(entities.begin(), entities.end(), entity), entities.end());
-    // std::cout << "[PHYSICS] Entity unregistered\n";
+    //std::cout << "[PHYSICS] Entity unregistered\n";
 }
 
-// Move entity by dx, dy (ignores velocity)
+//Move entity by dx, dy (ignores velocity)
 void PhysicsManager::move(SpatialEntity& entity, float dx, float dy) {
     entity.set_position(entity.get_x() + dx, entity.get_y() + dy);
 }
@@ -49,31 +49,31 @@ void PhysicsManager::set_gravity(float g) {
 //collisions enabler
 void PhysicsManager::enable_collisions(bool enable) {
     collision = enable;
-    // std::cout << "[PHYSICS] Collisions " << (collision ? "enabled" : "disabled") << "\n";
+    //std::cout << "[PHYSICS] Collisions " << (collision ? "enabled" : "disabled") << "\n";
 }
 
 void PhysicsManager::update(float deltaTime) {
     for (auto& entity : entities) {
         if (entity->get_is_static()) continue;
 
-        // Apply gravity to vertical velocity
+        //Apply gravity to vertical velocity
         float vx = entity->get_vx();
         float vy = entity->get_vy() + gravity * deltaTime;
         entity->set_velocity(vx, vy);
 
-        // Move entity by its velocity
+        //Move entity by its velocity
         entity->set_position(
             entity->get_x() + vx * deltaTime,
             entity->get_y() + vy * deltaTime
         );
     }
 
-    // Collision handling
+    //Collision handling
     if (collision) {
         for (size_t i = 0; i < entities.size(); i++) {
             for (size_t j = i + 1; j < entities.size(); j++) {
                 if (check_collision(*entities[i], *entities[j])) {
-                    // Simple response: stop both entities
+                    //Simple response: stop both entities
                     entities[i]->set_velocity(0.0f, 0.0f);
                     entities[j]->set_velocity(0.0f, 0.0f);
                 }
