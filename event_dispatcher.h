@@ -20,13 +20,10 @@ private:
 public:
     EventDispatcher() = default;
 
-    // Subscribe a callback to a specific entity ID
     void subscribe(const std::string& entity_id, EventCallback callback);
 
-    // Add event to the queue
     void enqueue_event(std::unique_ptr<Event> event);
-
-    // Process all queued events
+    
     void process_events();
 };
 

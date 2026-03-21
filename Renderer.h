@@ -2,6 +2,7 @@
 #define RENDERER_H
 
 #include "SpatialEntity.h" 
+#include "EngineExceptions.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -37,8 +38,14 @@ public:
     void set_color(int foreground, int background = 0);
     void reset_color();
     
-    int get_width() const { return width; }
-    int get_height() const { return height; }
+    int get_width() const 
+    { 
+        return width; 
+    }
+    int get_height() const 
+    { 
+        return height; 
+    }
 };
 
 #endif

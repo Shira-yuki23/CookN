@@ -21,7 +21,7 @@ void EventDispatcher::process_events()
         std::unique_ptr<Event> event = std::move(local_queue.front());
         local_queue.pop();
 
-        // Broadcast to all subscribers if target_id is empty
+        //broadcast 
         if (event->target_id.empty())
         {
             for (auto& pair : subscribers)

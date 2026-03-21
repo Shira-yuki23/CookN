@@ -11,13 +11,11 @@ private:
     std::unordered_map<int, bool> previousKeyStates;
 
 public:
-    //key states 
     void process_input();
     bool is_key_pressed(int key);   
     bool is_key_held(int key);      
-    bool is_key_released(int key);  
+    bool is_key_released(int key);
 
-    //Event callback
     std::function<void(const InputEvent&)> on_input_event;
 
 };
