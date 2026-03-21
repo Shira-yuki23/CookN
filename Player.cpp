@@ -21,18 +21,16 @@ void Player::update(float delta_time)
 
 void Player::draw(float alpha)
 {
-    /*
     cout << "Player at ("
          << static_cast<int>(get_x()) << ","
          << static_cast<int>(get_y()) << ")\n";
-    */
 }
 
 void Player::on_event(const Event& event)
 {
     if (auto input = dynamic_cast<const InputEvent*>(&event))
     {
-        float speed = 100.0f; // units per second
+        float speed = 100.0f; 
 
         switch (input->type)
         {
@@ -59,7 +57,7 @@ void Player::on_event(const Event& event)
                 break;
 
             case EventType::ATTACK:
-                // cout << get_name() << " attacks!\n";
+                cout << get_name() << " attacks!\n";
                 break;
 
             default:

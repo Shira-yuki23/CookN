@@ -23,6 +23,8 @@ public:
     bool get_is_static() const;
     void set_is_static(bool s);
 
+    void update_previous_position();
+
     //render
     virtual char get_symbol() const;
 

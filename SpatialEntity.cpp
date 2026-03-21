@@ -30,12 +30,17 @@ void SpatialEntity::set_is_static(bool s)
     is_static = s;
 }
 
+void SpatialEntity::update_previous_position()
+{
+    prev_x = x;
+    prev_y = y;
+}
+
 char SpatialEntity::get_symbol() const
 {
     return '?';
 }
 
-//for_collision=>phy._hand.
 float SpatialEntity::get_left() const
 {
     return get_x();
@@ -55,7 +60,7 @@ float SpatialEntity::get_bottom() const
 {
     return get_y() + height;
 }
-//
+
 float SpatialEntity::get_prev_x() const
 {
     return prev_x;

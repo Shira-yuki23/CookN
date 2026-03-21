@@ -14,8 +14,15 @@ Renderer::Renderer(int console_width, int console_height)
     , height(console_height)
     , use_color(false)
 {
-    screen_buffer.resize(height, std::string(width, ' '));
-    back_buffer.resize(height, std::string(width, ' '));
+    try 
+    {
+        screen_buffer.resize(height, std::string(width, ' '));
+        back_buffer.resize(height, std::string(width, ' '));
+    }
+    catch (const std::exception& e)
+    {
+        throw RendererException("Failed to allocate screen buffers: " + std::string(e.what()));
+    }
     
     hide_cursor();
 }
@@ -23,12 +30,14 @@ Renderer::Renderer(int console_width, int console_height)
 Renderer::~Renderer()
 {
     reset_color();
-    std::cout << "[RENDERER] Shutdown" << std::endl;
 }
 
 void Renderer::render(Scene* scene, float alpha, int fps)
 {
-    if (!scene) return;
+    if (!scene) 
+    {
+        throw RendererException("Cannot render null scene");
+    }
     
     clear_buffer();
     draw_border();
@@ -47,7 +56,8 @@ void Renderer::render(Scene* scene, float alpha, int fps)
     draw_text(2, 0, "Scene: " + scene->getName());
     draw_text(width - 20, 0, "Alpha: " + std::to_string(alpha).substr(0, 4));
     
-    if (fps >= 0) {
+    if (fps >= 0) 
+    {
         draw_text(width - 32, 0, "FPS: " + std::to_string(fps));
     }
     
@@ -70,7 +80,6 @@ void Renderer::swap_buffers()
 
 void Renderer::draw_border()
 {
-
     for (int x = 0; x < width; x++)
     {
         back_buffer[0][x] = '-';
@@ -99,7 +108,10 @@ void Renderer::draw_border()
 
 void Renderer::draw_entity(const std::shared_ptr<SpatialEntity>& spatial_entity, float alpha)
 {
-    if (!spatial_entity) return;
+    if (!spatial_entity) 
+    {
+        return;
+    }
 
     int x = static_cast<int>(spatial_entity->get_prev_x() + 
                              (spatial_entity->get_x() - spatial_entity->get_prev_x()) * alpha);
@@ -115,7 +127,10 @@ void Renderer::draw_entity(const std::shared_ptr<SpatialEntity>& spatial_entity,
 
 void Renderer::draw_text(int x, int y, const std::string& text)
 {
-    if (y < 0 || y >= height) return;
+    if (y < 0 || y >= height) 
+    {
+        return;
+    }
     
     for (size_t i = 0; i < text.length(); i++)
     {
@@ -151,13 +166,13 @@ void Renderer::display()
 {
     set_cursor_position(0, 0);
 
-    // Optimize output by using a single string for the whole frame
     std::string frame;
     frame.reserve(height * (width + 1));
     for (int i = 0; i < height; i++)
     {
         frame += screen_buffer[i];
-        if (i < height - 1) { // Avoid newline on the very last line to prevent scrolling
+        if (i < height - 1) 
+        { 
             frame += '\n';
         }
     }
@@ -168,12 +183,22 @@ void Renderer::hide_cursor()
 {
 #ifdef _WIN32
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hConsole == INVALID_HANDLE_VALUE)
+    {
+        throw RendererException("Failed to get console handle");
+    }
     CONSOLE_CURSOR_INFO cursorInfo;
-    GetConsoleCursorInfo(hConsole, &cursorInfo);
+    if (!GetConsoleCursorInfo(hConsole, &cursorInfo))
+    {
+        throw RendererException("Failed to get console cursor info");
+    }
     cursorInfo.bVisible = FALSE;
-    SetConsoleCursorInfo(hConsole, &cursorInfo);
+    if (!SetConsoleCursorInfo(hConsole, &cursorInfo))
+    {
+        throw RendererException("Failed to set console cursor info");
+    }
 #else
-    std::cout << "\033[?25l" << std::flush; // ANSI hide cursor
+    std::cout << "\033[?25l" << std::flush;
 #endif
 }
 
@@ -181,13 +206,18 @@ void Renderer::set_cursor_position(int x, int y)
 {
 #ifdef _WIN32
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD coord = { (SHORT)x, (SHORT)y };
-    SetConsoleCursorPosition(hConsole, coord);
+    if (hConsole != INVALID_HANDLE_VALUE)
+    {
+        COORD coord = { (SHORT)x, (SHORT)y };
+        SetConsoleCursorPosition(hConsole, coord);
+    }
 #endif
-    // ANSI escape sequence for cursor positioning (Home or specific position)
-    if (x == 0 && y == 0) {
+    if (x == 0 && y == 0) 
+    {
         std::cout << "\033[H" << std::flush;
-    } else {
+    } 
+    else 
+    {
         std::cout << "\033[" << (y + 1) << ";" << (x + 1) << "H" << std::flush;
     }
 }
@@ -196,8 +226,15 @@ void Renderer::set_size(int w, int h)
 {
     width = w;
     height = h;
-    screen_buffer.resize(height, std::string(width, ' '));
-    back_buffer.resize(height, std::string(width, ' '));
+    try
+    {
+        screen_buffer.resize(height, std::string(width, ' '));
+        back_buffer.resize(height, std::string(width, ' '));
+    }
+    catch (const std::exception& e)
+    {
+        throw RendererException("Failed to resize screen buffers: " + std::string(e.what()));
+    }
 }
 
 void Renderer::set_color(int foreground, int background)
@@ -206,7 +243,10 @@ void Renderer::set_color(int foreground, int background)
     
     #ifdef _WIN32
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hConsole, foreground | (background << 4));
+    if (hConsole != INVALID_HANDLE_VALUE)
+    {
+        SetConsoleTextAttribute(hConsole, foreground | (background << 4));
+    }
     #else
     std::cout << "\033[" << foreground << "m";
     if (background > 0)
@@ -220,7 +260,10 @@ void Renderer::reset_color()
 {
     #ifdef _WIN32
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleTextAttribute(hConsole, 7);  
+    if (hConsole != INVALID_HANDLE_VALUE)
+    {
+        SetConsoleTextAttribute(hConsole, 7);  
+    }
     #else
     std::cout << "\033[0m"; 
     #endif

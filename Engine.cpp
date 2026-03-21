@@ -2,16 +2,13 @@
 #include <iostream>
 #include <algorithm>
 #include <windows.h>
-#include <thread>
-#include <chrono>
 #include "Scene.h"
 #include "Entity.h"
 #include "InputHandler.h" 
 #include "renderer.h"
 #include "PhysicsManager.h" 
 #include "Event.h" 
-
-using namespace std::chrono;
+#include "SpatialEntity.h"
 
 Engine::Engine() 
     : is_running(false)
@@ -20,8 +17,8 @@ Engine::Engine()
     , frame_count(0)
     , target_fps(60)  
     , current_fps(0)
+    , last_frame_time(Time::now())
 {
-    std::cout << "[ENGINE] Engine created" << std::endl;
 }
 
 Engine::~Engine() 
@@ -31,20 +28,26 @@ Engine::~Engine()
 
 void Engine::initialize() 
 {
-    std::cout << "[ENGINE] Initializing..." << std::endl;
-    
     input_handler = std::make_unique<InputHandler>();
-    
-    // Connect input events to the current scene's entities
-    input_handler->on_input_event = [this](const InputEvent& event) {
-        if (event.type == EventType::QUIT) {
+    if (!input_handler)
+    {
+        throw InitializationException("Failed to create InputHandler");
+    }
+
+    input_handler->on_input_event = [this](const InputEvent& event) 
+    {
+        if (event.type == EventType::QUIT) 
+        {
             is_running = false;
         }
 
-        if (current_scene) {
+        if (current_scene) 
+        {
             auto entities = current_scene->getEntities();
-            for (auto& entity : entities) {
-                if (entity) {
+            for (auto& entity : entities) 
+            {
+                if (entity) 
+                {
                     entity->on_event(event);
                 }
             }
@@ -52,29 +55,35 @@ void Engine::initialize()
     };
 
     renderer = std::make_unique<Renderer>();  
+    if (!renderer)
+    {
+        throw InitializationException("Failed to create Renderer");
+    }
+
     physics_manager = std::make_unique<PhysicsManager>();
+    if (!physics_manager)
+    {
+        throw InitializationException("Failed to create PhysicsManager");
+    }
     
     current_scene = std::make_shared<Scene>("DefaultScene");
+    if (!current_scene)
+    {
+        throw InitializationException("Failed to create DefaultScene");
+    }
     scenes.push_back(current_scene);
     
     is_running = true;
     is_paused = false;
-    last_frame_time = high_resolution_clock::now();
-    
-    std::cout << "[ENGINE] Initialization complete" << std::endl;
-    std::cout << "[ENGINE] Target FPS: " << target_fps << std::endl;
+    last_frame_time = Time::now();
 }
 
 void Engine::run() 
 {
     if (!is_running) 
     {
-        std::cerr << "[ENGINE ERROR] Cannot run - engine not initialized" << std::endl;
-        return;
+        throw EngineException("Cannot run - engine not initialized");
     }
-    
-    std::cout << "[ENGINE] Game loop started" << std::endl;
-    std::cout << "----------------------------------------" << std::endl;
     
 #ifdef _WIN32
     system("cls");
@@ -82,18 +91,28 @@ void Engine::run()
     system("clear");
 #endif
 
-    const double target_frame_time = 1.0 / target_fps; 
-    
-    auto previous_time = high_resolution_clock::now();
+    const double target_frame_time = 1.0 / target_fps;
+    auto previous_time = Time::now();
     double lag = 0.0;
     
     while(is_running)
     {
-        auto current_time = high_resolution_clock::now();
+        auto current_time = Time::now();
         
-        double elapsed = duration<double>(current_time - previous_time).count();
+        double elapsed = Time::elapsed_seconds(previous_time, current_time);
         previous_time = current_time;
         lag += elapsed;
+        
+        if (current_scene) 
+        {
+            for (auto& entity : current_scene->getEntities()) 
+            {
+                if (auto spatial = std::dynamic_pointer_cast<SpatialEntity>(entity)) 
+                {
+                    spatial->update_previous_position();
+                }
+            }
+        }
 
         bool paused = is_paused;
 
@@ -121,7 +140,6 @@ void Engine::run()
 
         if (renderer && current_scene) 
         {
-           
             float alpha = static_cast<float>(lag / target_frame_time);
             if (alpha < 0.0f) alpha = 0.0f;
             if (alpha > 1.0f) alpha = 1.0f;
@@ -130,11 +148,11 @@ void Engine::run()
         
         frame_count++;
 
-        static auto last_fps_time = high_resolution_clock::now();
+        static auto last_fps_time = Time::now();
         static int last_frame_count = 0;
         
-        auto now = high_resolution_clock::now();
-        double time_since_last_fps = duration<double>(now - last_fps_time).count();
+        auto now = Time::now();
+        double time_since_last_fps = Time::elapsed_seconds(last_fps_time, now);
         
         if (time_since_last_fps >= 1.0) 
         {
@@ -143,24 +161,19 @@ void Engine::run()
             last_frame_count = frame_count;
         }
 
-                auto frame_end = high_resolution_clock::now();
-        double frame_duration = duration<double>(frame_end - current_time).count();
+        auto frame_end = Time::now();
+        double frame_duration = Time::elapsed_seconds(current_time, frame_end);
         
         if (frame_duration < target_frame_time)  
         {
-            // Calculate sleep time in milliseconds
             int sleep_ms = static_cast<int>((target_frame_time - frame_duration) * 1000);
-            
-            // Use milliseconds directly - this works with older GCC
-            std::chrono::milliseconds sleep_duration(sleep_ms);
-            Sleep(sleep_ms);
+            Time::sleep_milliseconds(sleep_ms);
         }
     }
 }
 
 void Engine::shutdown() 
 {
-    std::cout << "[ENGINE] Shutting down..." << std::endl;
     is_running = false;
 
     renderer.reset();
@@ -168,50 +181,42 @@ void Engine::shutdown()
     physics_manager.reset();
     scenes.clear();
     current_scene.reset();
-    
-    std::cout << "[ENGINE] Shutdown complete" << std::endl;
 }
 
-void Engine::add_scene(std::shared_ptr<Scene> scene)
+void Engine::add_scene(ScenePtr scene)
 {
     if (scene)
     {
         scenes.push_back(scene);
-        std::cout << "[ENGINE] Scene added: " << scene->getName() << std::endl;
     }
 }
 
 void Engine::load_scene(const std::string& scene_name) 
 {
-    std::cout << "[ENGINE] Loading scene: " << scene_name << std::endl;
-    
-    for (auto& scene : scenes)
+    for (auto& scene : scenes)  
     {
         if (scene->getName() == scene_name)
         {
             current_scene = scene;
-            std::cout << "[ENGINE] Scene loaded: " << scene_name << std::endl;
             return;
         }
     }
     
-    std::cerr << "[ENGINE ERROR] Scene not found: " << scene_name << std::endl;
+    throw SceneException("Scene not found: " + scene_name);
 }
 
 bool Engine::switch_scene(const std::string& scene_name) 
 {
-    for(auto& scene : scenes)
+    for(auto& scene : scenes)  
     {
         if(scene->getName() == scene_name)
         {
             current_scene = scene;
-            std::cout << "[ENGINE] Switched to scene: " << scene_name << std::endl;
             return true;
         }
     }
     
-    std::cerr << "[ENGINE ERROR] Cannot switch - scene not found: " << scene_name << std::endl;
-    return false;
+    throw SceneException("Cannot switch - scene not found: " + scene_name);
 }
 
 void Engine::pause()
@@ -219,7 +224,6 @@ void Engine::pause()
     if (!is_paused)
     {
         is_paused = true;
-        std::cout << "[ENGINE] Game paused" << std::endl;
     }
 }
 
@@ -228,16 +232,14 @@ void Engine::resume()
     if (is_paused)
     {
         is_paused = false;
-        std::cout << "[ENGINE] Game resumed" << std::endl;
     }
 }
 
-void Engine::add_entity(std::shared_ptr<Entity> entity)
+void Engine::add_entity(EntityPtr entity)
 {
     if (current_scene && entity)
     {
         current_scene->addEntity(entity);
-        std::cout << "[ENGINE] Entity added to current scene" << std::endl;
     }
 }
 
@@ -246,11 +248,10 @@ void Engine::remove_entity(const std::string& entity_id)
     if (current_scene)
     {
         current_scene->removeEntity(entity_id);
-        std::cout << "[ENGINE] Entity removed: " << entity_id << std::endl;
     }
 }
 
-std::shared_ptr<Scene> Engine::get_current_scene() const 
+Engine::ScenePtr Engine::get_current_scene() const 
 {
     return current_scene;
 }
@@ -285,11 +286,14 @@ void Engine::set_paused(bool paused)
     is_paused = paused;
 }
 
-
 void Engine::set_target_fps(int fps)
 {
-    if (fps > 0) {
+    if (fps > 0) 
+    {
         target_fps = fps;
-        std::cout << "[ENGINE] Target FPS set to: " << target_fps << std::endl;
+    }
+    else
+    {
+        throw EngineException("Invalid target FPS: " + std::to_string(fps));
     }
 }

@@ -2,8 +2,8 @@
 #include "MenuScene.h"
 #include "GameScene.h"
 #include "PauseScene.h"
-#include "SettingsScene.h"   // ✅ New
-#include "CreditsScene.h"    // ✅ New
+#include "SettingsScene.h"  
+#include "CreditsScene.h"   
 #include <iostream>
 
 std::shared_ptr<Scene> SceneFactory::createScene(const std::string& sceneName)

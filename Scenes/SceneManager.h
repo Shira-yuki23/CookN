@@ -22,13 +22,12 @@ public:
     void removeScene(const std::string& sceneName);
 
     void switchScene(const std::string& sceneName);
-    void changeScene(const std::string& sceneName); // alias for switchScene
+    void changeScene(const std::string& sceneName); 
 
     void goBack();
 
     std::shared_ptr<Scene> getCurrentScene() const;
-
-    // Delegate to current scene
+    //forward to current scene
     void update(float deltaTime);
     void render(float deltaTime);
 
