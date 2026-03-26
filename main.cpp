@@ -1,8 +1,17 @@
-#include "Engine.h"
+ #include "Engine.h"
 #include "Player.h"
 #include "NPC.h"
 #include "Scene.h"
 #include "EngineExceptions.h"
+
+
+#include "Scenes/SceneManager.h"
+#include "Scenes/SceneFactory.h"
+
+#include "Utils/ConfigManager.h"
+#include "Utils/Timer.h"
+#include "Utils/Logger.h"
+
 #include <memory>
 #include <iostream>
 
@@ -16,7 +25,6 @@ int main()
     {
         Engine engine;
         engine.initialize();
-
         auto player = std::make_shared<Player>(5.0f, 5.0f);
         auto guard1 = std::make_shared<NPC>("Guard_Alpha", 15.0f, 5.0f);
         auto guard2 = std::make_shared<NPC>("Guard_Bravo", 10.0f, 15.0f);
@@ -31,6 +39,51 @@ int main()
         engine.add_entity(villager2);
         engine.add_entity(boss);
 
+        
+        auto sceneManager = std::make_shared<SceneManager>();
+
+        sceneManager->createAndAddScene("Menu");
+        sceneManager->createAndAddScene("Game");
+        sceneManager->createAndAddScene("Pause");
+        sceneManager->createAndAddScene("Settings");
+        sceneManager->createAndAddScene("Credits");
+
+        sceneManager->switchScene("Menu");
+        sceneManager->printAllScenes();
+
+        // Demonstrate transitions
+        sceneManager->switchScene("Game");
+        sceneManager->switchScene("Pause");
+        sceneManager->goBack(); // back to Game
+
+        auto currentScene = sceneManager->getCurrentScene();
+        if (currentScene)
+        {
+            std::cout << "Current Scene: " 
+                      << currentScene->getName() << std::endl;
+
+            currentScene->update(0.016f); // simulate frame update
+        }
+
+    
+        ConfigManager::GetInstance()->SetValue("volume", 75);
+        int volume = ConfigManager::GetInstance()->GetValueInt("volume");
+        std::cout << "Volume: " << volume << std::endl;
+
+        // ✅ Timer
+        Timer timer;
+        timer.update(1.0f);
+
+        if (timer.hasElapsed(1.0f))
+        {
+            std::cout << "1 second elapsed!" << std::endl;
+        }
+
+        // ✅ Logger
+        ConsoleLogger logger;
+        logger.log("Game initialized successfully", LogLevel::INFO);
+
+    
         engine.run();
         engine.shutdown();
     }
